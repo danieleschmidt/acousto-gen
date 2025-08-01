@@ -1,16 +1,17 @@
-# GitHub Actions Workflows
+# GitHub Actions Setup Guide
 
-**⚠️ IMMEDIATE ACTION REQUIRED**: Copy the workflow files from `docs/deployment/ci-cd-workflows.md` to implement CI/CD.
+**⚠️ MANUAL SETUP REQUIRED**: Due to GitHub security restrictions, workflow files must be created manually.
 
 ## Quick Setup (5 minutes)
 
-1. **Create test workflow**:
+1. **Create workflows directory**:
 ```bash
-cp docs/deployment/workflows/test.yml .github/workflows/test.yml
+mkdir -p .github/workflows
 ```
 
-2. **Create security workflow**:
-```bash 
+2. **Copy workflow templates**:
+```bash
+cp docs/deployment/workflows/test.yml .github/workflows/test.yml
 cp docs/deployment/workflows/security.yml .github/workflows/security.yml
 ```
 
