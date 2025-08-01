@@ -22,8 +22,8 @@ scoring:
       security: 0.1
   
   thresholds:
-    minScore: 10
-    maxRisk: 0.8
+    minScore: 15
+    maxRisk: 0.7
     securityBoost: 2.0
     complianceBoost: 1.8
 
@@ -34,33 +34,48 @@ discovery:
     - issueTrackers
     - vulnerabilityDatabases
     - performanceMonitoring
-    - userFeedback
+    - codeQuality
   
   tools:
     staticAnalysis:
-      - eslint
-      - sonarqube
-      - codeql
+      - ruff
+      - mypy
+      - bandit
     security:
-      - snyk
+      - safety
       - dependabot
-      - trivy
+      - codeql
     performance:
-      - lighthouse
-      - datadog
+      - pytest-benchmark
+      - memory-profiler
+    quality:
+      - coverage
+      - complexity-analysis
 
 execution:
   maxConcurrentTasks: 1
   testRequirements:
-    minCoverage: 80
+    minCoverage: 85
     performanceRegression: 5
+    qualityGates: true
   rollbackTriggers:
     - testFailure
     - buildFailure
     - securityViolation
+    - qualityRegression
 
 repository:
-  maturity: "developing"
-  language: "python"
-  framework: "pytorch"
-  domain: "scientific-computing"
+  maturityLevel: "maturing"
+  currentScore: 72
+  targetScore: 85
+  primaryLanguage: "python"
+  framework: "scientific-computing"
+  domain: "acoustic-holography"
+  
+automation:
+  enabled: true
+  schedules:
+    securityScan: "0 */4 * * *"  # Every 4 hours
+    dependencyCheck: "0 2 * * 1"  # Weekly Monday 2 AM
+    qualityAnalysis: "0 3 * * *"  # Daily 3 AM
+    performanceCheck: "0 4 * * 0"  # Weekly Sunday 4 AM
