@@ -1,0 +1,128 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[FEATURE] "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a new feature! Please provide detailed information.
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Type
+      description: What type of feature are you requesting?
+      options:
+        - Core Algorithm Enhancement
+        - New Optimization Method
+        - Hardware Support
+        - API Enhancement
+        - Documentation
+        - Performance Improvement
+        - Safety Feature
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve?
+      placeholder: |
+        Is your feature request related to a problem? Please describe.
+        A clear description of what the problem is. Ex. I'm always frustrated when [...]
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like
+      placeholder: |
+        A clear and concise description of what you want to happen.
+        Include any specific API design or implementation details if you have them.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Describe alternatives you've considered
+      placeholder: |
+        A clear description of any alternative solutions or features you've considered.
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe your specific use case
+      placeholder: |
+        How would you use this feature? What's your application?
+        - Acoustic levitation
+        - Mid-air haptics  
+        - Medical ultrasound
+        - Research application
+        - Other: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation Ideas
+      description: Do you have ideas for how this could be implemented?
+      placeholder: |
+        If you have technical ideas about implementation, please share them.
+        This is optional but helpful for development planning.
+
+  - type: checkboxes
+    id: hardware-impact
+    attributes:
+      label: Hardware Impact
+      description: Does this feature relate to hardware?
+      options:
+        - label: This feature requires new hardware support
+        - label: This feature affects hardware safety considerations
+        - label: This feature changes hardware performance requirements
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would significantly improve my workflow
+        - High - Blocking my current project
+        - Critical - Essential for production use
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you willing to help implement this feature?
+      options:
+        - label: I'm willing to help implement this feature
+        - label: I can provide testing and feedback
+        - label: I can contribute documentation
+        - label: I can provide domain expertise
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided a clear use case and problem statement
+          required: true
+        - label: I have considered the impact on existing functionality
+          required: true
