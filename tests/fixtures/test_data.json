@@ -1,0 +1,87 @@
+{
+  "acoustic_parameters": {
+    "frequencies": [20000, 40000, 60000],
+    "media": {
+      "air": {
+        "density": 1.225,
+        "speed_of_sound": 343.0,
+        "absorption": 0.01
+      },
+      "water": {
+        "density": 1000.0,
+        "speed_of_sound": 1482.0,
+        "absorption": 0.002
+      },
+      "tissue": {
+        "density": 1050.0,
+        "speed_of_sound": 1540.0,
+        "absorption": 0.05
+      }
+    }
+  },
+  "transducer_arrays": {
+    "small_array": {
+      "elements": 64,
+      "geometry": "grid",
+      "spacing": 0.01,
+      "aperture": 0.08
+    },
+    "medium_array": {
+      "elements": 256,
+      "geometry": "grid", 
+      "spacing": 0.0105,
+      "aperture": 0.168
+    },
+    "large_array": {
+      "elements": 1024,
+      "geometry": "grid",
+      "spacing": 0.01,
+      "aperture": 0.32
+    }
+  },
+  "test_targets": {
+    "single_focus": {
+      "type": "focus_point",
+      "position": [0, 0, 0.1],
+      "pressure": 4000
+    },
+    "twin_trap": {
+      "type": "multi_focus",
+      "positions": [[0.02, 0, 0.1], [-0.02, 0, 0.1]],
+      "pressures": [3000, 3000]
+    },
+    "levitation_plane": {
+      "type": "planar_trap",
+      "height": 0.08,
+      "size": [0.06, 0.06],
+      "pressure": 2000
+    }
+  },
+  "optimization_settings": {
+    "algorithms": ["adam", "sgd", "genetic"],
+    "iterations": [100, 500, 1000],
+    "convergence_thresholds": [1e-4, 1e-5, 1e-6],
+    "learning_rates": [0.001, 0.01, 0.1]
+  },
+  "safety_limits": {
+    "max_pressure": 5000,
+    "max_intensity": 15,
+    "max_temperature": 45,
+    "exposure_limits": {
+      "continuous": 300,
+      "pulsed": 1800
+    }
+  },
+  "validation_cases": {
+    "analytical": {
+      "single_focus_error_threshold": 0.05,
+      "field_uniformity_threshold": 0.1,
+      "phase_stability_threshold": 0.02
+    },
+    "experimental": {
+      "measurement_uncertainty": 0.1,
+      "calibration_accuracy": 0.05,
+      "repeatability_threshold": 0.03
+    }
+  }
+}

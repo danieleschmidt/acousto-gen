@@ -1,0 +1,63 @@
+# Grafana datasource provisioning for Prometheus
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    uid: prometheus-uid
+    editable: true
+    jsonData:
+      httpMethod: POST
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: 2.40.0
+      cacheLevel: 'High'
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: jaeger-uid
+    secureJsonData: {}
+
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    uid: loki-uid
+    editable: true
+    jsonData:
+      derivedFields:
+        - datasourceUid: jaeger-uid
+          matcherRegex: "trace_id=(\\w+)"
+          name: TraceID
+          url: "$${__value.raw}"
+
+  - name: Jaeger
+    type: jaeger
+    access: proxy
+    url: http://jaeger:16686
+    uid: jaeger-uid
+    editable: true
+    jsonData:
+      tracesToLogsV2:
+        datasourceUid: loki-uid
+        tags: ['job']
+        filterByTraceID: false
+        filterBySpanID: false
+      tracesToMetrics:
+        datasourceUid: prometheus-uid
+        tags: [{ key: 'service.name', value: 'service' }]
+        queries:
+          - name: 'Sample query'
+            query: 'sum(rate(traces_spanmetrics_latency_bucket{$$__tags}[5m]))'
+
+  - name: Alertmanager
+    type: alertmanager
+    access: proxy
+    url: http://alertmanager:9093
+    uid: alertmanager-uid
+    editable: true
+    jsonData:
+      implementation: prometheus

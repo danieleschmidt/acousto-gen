@@ -1,0 +1,100 @@
+# Prometheus configuration for Acousto-Gen monitoring
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'acousto-gen'
+    environment: 'development'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "rules/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 5s
+
+  # Acousto-Gen application metrics
+  - job_name: 'acousto-gen'
+    static_configs:
+      - targets: ['acousto-gen-dev:8080', 'acousto-gen-prod:8080']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    params:
+      format: ['prometheus']
+
+  # System metrics from node_exporter
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 10s
+
+  # Docker container metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 10s
+
+  # GPU metrics (if available)
+  - job_name: 'gpu-metrics'
+    static_configs:
+      - targets: ['dcgm-exporter:9400']
+    scrape_interval: 10s
+
+  # Hardware monitoring (custom exporters)
+  - job_name: 'transducer-arrays'
+    static_configs:
+      - targets: ['hardware-exporter:8081']
+    scrape_interval: 5s
+    metrics_path: '/hardware/metrics'
+
+  # Safety monitoring
+  - job_name: 'safety-monitor'
+    static_configs:
+      - targets: ['safety-monitor:8082']
+    scrape_interval: 1s  # High frequency for safety
+    metrics_path: '/safety/metrics'
+
+  # Application performance monitoring
+  - job_name: 'acousto-gen-performance'
+    static_configs:
+      - targets: ['acousto-gen-dev:8080']
+    scrape_interval: 5s
+    metrics_path: '/performance/metrics'
+
+  # Database metrics
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 15s
+
+  # Redis metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 15s
+
+# Remote write configuration (for long-term storage)
+remote_write:
+  - url: "http://cortex:9009/api/prom/push"
+    queue_config:
+      max_samples_per_send: 1000
+      max_shards: 5
+      capacity: 500
+
+# Remote read configuration
+remote_read:
+  - url: "http://cortex:9009/api/prom/read"
+    read_recent: true

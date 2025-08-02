@@ -52,6 +52,21 @@ When using Acousto-Gen in production:
 - Implement access controls for multi-user systems
 - Log safety-critical operations for audit trails
 
+#### Container Security
+- Run containers as non-root users
+- Use minimal base images in production
+- Regularly update Docker images and dependencies
+- Implement network segmentation for production deployments
+- Use secrets management for sensitive configuration
+- Enable container security scanning in CI/CD pipelines
+
+#### Network Security
+- Use TLS/SSL for all network communications
+- Implement proper authentication and authorization
+- Restrict network access to necessary ports only
+- Use VPNs for remote hardware access
+- Monitor network traffic for anomalies
+
 ### Vulnerability Types We Address
 
 - **Hardware Control**: Unauthorized transducer activation
@@ -60,6 +75,9 @@ When using Acousto-Gen in production:
 - **Dependency Vulnerabilities**: Third-party package issues
 - **Data Exposure**: Calibration or patient data leaks
 - **Code Injection**: Unsafe eval/exec usage in optimization
+- **Container Escape**: Docker/container security issues
+- **Network Attacks**: Man-in-the-middle, eavesdropping
+- **Authentication Bypass**: Unauthorized system access
 
 ### Security Contact
 

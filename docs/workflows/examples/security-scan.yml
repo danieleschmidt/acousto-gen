@@ -1,0 +1,547 @@
+name: Security Scan
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  push:
+    branches: [ main ]
+    paths:
+      - 'acousto_gen/**'
+      - 'requirements/**'
+      - 'pyproject.toml'
+      - '.github/workflows/security-scan.yml'
+  pull_request:
+    paths:
+      - 'acousto_gen/**'
+      - 'requirements/**'
+      - 'pyproject.toml'
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of security scan'
+        required: true
+        default: 'comprehensive'
+        type: choice
+        options:
+          - comprehensive
+          - dependencies-only
+          - code-only
+          - container-only
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ==========================================================================
+  # Static Code Analysis Security Scan
+  # ==========================================================================
+  code-security:
+    name: Code Security Analysis
+    runs-on: ubuntu-latest
+    if: github.event.inputs.scan_type != 'dependencies-only' && github.event.inputs.scan_type != 'container-only'
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+          pip install bandit[toml] safety semgrep
+
+      - name: Run Bandit security linter
+        run: |
+          bandit -r acousto_gen/ \
+            -f json \
+            -o bandit-report.json \
+            --severity-level medium \
+            --confidence-level medium
+
+      - name: Convert Bandit report to SARIF
+        uses: microsoft/bandit-sarif@v1
+        if: always()
+        with:
+          bandit-json: bandit-report.json
+          sarif-file: bandit.sarif
+
+      - name: Upload Bandit SARIF results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: bandit.sarif
+          category: bandit
+
+      - name: Run Semgrep security scan
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/python
+          generateSarif: "1"
+
+      - name: Upload Semgrep SARIF results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+      - name: Check for hardcoded secrets
+        run: |
+          # Custom secret detection patterns
+          echo "Checking for potential secrets..."
+          
+          # API keys, tokens, passwords
+          if grep -r -E "(api[_-]?key|password|secret|token).*=.*['\"][a-zA-Z0-9]{16,}['\"]" acousto_gen/ --exclude-dir=tests; then
+            echo "⚠️  Potential hardcoded secrets found!"
+            exit 1
+          fi
+          
+          # Database URLs
+          if grep -r -E "(postgres|mysql|mongodb)://[^@]+:[^@]+@" acousto_gen/; then
+            echo "⚠️  Database URLs with credentials found!"
+            exit 1
+          fi
+          
+          # AWS credentials
+          if grep -r -E "(AKIA[0-9A-Z]{16}|aws_secret_access_key)" acousto_gen/; then
+            echo "⚠️  AWS credentials found!"
+            exit 1
+          fi
+          
+          echo "✅ No hardcoded secrets detected"
+
+      - name: Upload security artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: code-security-reports
+          path: |
+            bandit-report.json
+            bandit.sarif
+            semgrep.sarif
+
+  # ==========================================================================
+  # Dependency Security Scan
+  # ==========================================================================
+  dependency-security:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    if: github.event.inputs.scan_type != 'code-only' && github.event.inputs.scan_type != 'container-only'
+    permissions:
+      security-events: write
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+          pip install safety pip-audit cyclonedx-bom
+
+      - name: Run Safety check
+        run: |
+          safety check \
+            --json \
+            --output safety-report.json \
+            --continue-on-error || true
+          
+          # Also run with detailed output
+          safety check --full-report || true
+
+      - name: Run pip-audit
+        run: |
+          pip-audit \
+            --format=json \
+            --output=pip-audit-report.json \
+            --progress-spinner=off || true
+          
+          # Generate SARIF output
+          pip-audit \
+            --format=sarif \
+            --output=pip-audit.sarif \
+            --progress-spinner=off || true
+
+      - name: Upload pip-audit SARIF results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: pip-audit.sarif
+          category: pip-audit
+
+      - name: Generate SBOM
+        run: |
+          cyclonedx-py \
+            --requirements \
+            --output-format json \
+            --output-file sbom.json
+          
+          # Also generate XML format
+          cyclonedx-py \
+            --requirements \
+            --output-format xml \
+            --output-file sbom.xml
+
+      - name: Check for known malicious packages
+        run: |
+          # Check against known malicious package list
+          echo "Checking for known malicious packages..."
+          
+          # Get installed packages
+          pip list --format=json > installed-packages.json
+          
+          # Check against common typosquatting patterns
+          python -c "
+          import json
+          import re
+          
+          with open('installed-packages.json') as f:
+              packages = json.load(f)
+          
+          # Common typosquatting patterns
+          suspicious_patterns = [
+              r'.*urllib.*3.*',
+              r'.*request.*s.*',
+              r'.*numpy.*',
+              r'.*pandas.*',
+              r'.*tensorflow.*',
+              r'.*torch.*',
+          ]
+          
+          for package in packages:
+              name = package['name'].lower()
+              for pattern in suspicious_patterns:
+                  if re.match(pattern, name) and name not in ['urllib3', 'requests', 'numpy', 'pandas', 'tensorflow', 'torch']:
+                      print(f'⚠️  Potentially suspicious package: {name}')
+          
+          print('✅ Package check complete')
+          "
+
+      - name: License compliance check
+        run: |
+          pip install pip-licenses
+          
+          # Generate license report
+          pip-licenses \
+            --format=json \
+            --output-file=licenses.json \
+            --with-urls \
+            --with-description
+          
+          # Check for incompatible licenses
+          python -c "
+          import json
+          
+          with open('licenses.json') as f:
+              licenses = json.load(f)
+          
+          # Define license compatibility (example)
+          incompatible_licenses = [
+              'GPL-3.0', 'AGPL-3.0', 'LGPL-3.0'
+          ]
+          
+          issues = []
+          for pkg in licenses:
+              if pkg['License'] in incompatible_licenses:
+                  issues.append(f\"{pkg['Name']}: {pkg['License']}\")
+          
+          if issues:
+              print('⚠️  License compatibility issues:')
+              for issue in issues:
+                  print(f'  - {issue}')
+              # Don't fail on license issues, just warn
+          else:
+              print('✅ All licenses compatible')
+          "
+
+      - name: Upload dependency security artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: dependency-security-reports
+          path: |
+            safety-report.json
+            pip-audit-report.json
+            pip-audit.sarif
+            sbom.json
+            sbom.xml
+            licenses.json
+            installed-packages.json
+
+  # ==========================================================================
+  # Container Security Scan
+  # ==========================================================================
+  container-security:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    if: github.event.inputs.scan_type != 'code-only' && github.event.inputs.scan_type != 'dependencies-only'
+    permissions:
+      security-events: write
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build container for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: production
+          load: true
+          tags: acousto-gen:security-scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'acousto-gen:security-scan'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+          category: trivy
+
+      - name: Run Trivy for detailed report
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'acousto-gen:security-scan'
+          format: 'json'
+          output: 'trivy-detailed.json'
+
+      - name: Scan with Anchore Grype
+        uses: anchore/scan-action@v3
+        id: grype-scan
+        with:
+          image: 'acousto-gen:security-scan'
+          format: sarif
+          output-file: grype-results.sarif
+
+      - name: Upload Grype scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: grype-results.sarif
+          category: grype
+
+      - name: Container configuration analysis
+        run: |
+          # Check Dockerfile best practices
+          docker run --rm -i hadolint/hadolint < Dockerfile > hadolint-report.txt || true
+          
+          # Check for security issues in container
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/workspace \
+            aquasec/trivy config /workspace --format json --output trivy-config.json || true
+
+      - name: Check container runtime security
+        run: |
+          # Run container and check security settings
+          CONTAINER_ID=$(docker run -d acousto-gen:security-scan sleep 60)
+          
+          # Check if running as root
+          if docker exec $CONTAINER_ID whoami | grep -q root; then
+            echo "⚠️  Container running as root user"
+          else
+            echo "✅ Container running as non-root user"
+          fi
+          
+          # Check capabilities
+          docker exec $CONTAINER_ID capsh --print > container-capabilities.txt
+          
+          # Check mounted volumes
+          docker inspect $CONTAINER_ID | jq '.[0].Mounts' > container-mounts.json
+          
+          # Cleanup
+          docker stop $CONTAINER_ID
+          docker rm $CONTAINER_ID
+
+      - name: Upload container security artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: container-security-reports
+          path: |
+            trivy-results.sarif
+            trivy-detailed.json
+            grype-results.sarif
+            hadolint-report.txt
+            trivy-config.json
+            container-capabilities.txt
+            container-mounts.json
+
+  # ==========================================================================
+  # Infrastructure Security Scan
+  # ==========================================================================
+  infrastructure-security:
+    name: Infrastructure Security
+    runs-on: ubuntu-latest
+    if: github.event.inputs.scan_type == 'comprehensive' || github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Scan Infrastructure as Code
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: dockerfile,github_actions,secrets
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+
+      - name: Upload Checkov scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: checkov-results.sarif
+          category: checkov
+
+      - name: Scan GitHub Actions workflows
+        run: |
+          # Check for common security issues in workflows
+          echo "Checking GitHub Actions security..."
+          
+          # Check for script injection vulnerabilities
+          if grep -r "run:.*\${{" .github/workflows/ | grep -v "github.token"; then
+            echo "⚠️  Potential script injection vulnerability in workflows"
+          fi
+          
+          # Check for secrets in workflows
+          if grep -r -i "password\|secret\|key" .github/workflows/ | grep -v "secrets."; then
+            echo "⚠️  Potential hardcoded secrets in workflows"
+          fi
+          
+          # Check for overly permissive permissions
+          if grep -r "permissions:" .github/workflows/ | grep -E "(write-all|contents:.*write)"; then
+            echo "⚠️  Overly permissive workflow permissions detected"
+          fi
+
+  # ==========================================================================
+  # Security Report Generation
+  # ==========================================================================
+  security-report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    needs: [code-security, dependency-security, container-security]
+    if: always()
+    
+    steps:
+      - name: Download all security artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Generate comprehensive security report
+        run: |
+          mkdir -p security-report
+          
+          # Create HTML report
+          cat > security-report/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Acousto-Gen Security Report</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 40px; }
+                  .header { background: #f0f0f0; padding: 20px; border-radius: 5px; }
+                  .section { margin: 20px 0; }
+                  .pass { color: green; font-weight: bold; }
+                  .fail { color: red; font-weight: bold; }
+                  .warn { color: orange; font-weight: bold; }
+                  table { border-collapse: collapse; width: 100%; }
+                  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                  th { background-color: #f2f2f2; }
+              </style>
+          </head>
+          <body>
+              <div class="header">
+                  <h1>Acousto-Gen Security Scan Report</h1>
+                  <p>Generated: $(date)</p>
+                  <p>Commit: ${{ github.sha }}</p>
+                  <p>Branch: ${{ github.ref_name }}</p>
+              </div>
+          EOF
+          
+          # Add scan results summary
+          echo '<div class="section"><h2>Scan Results Summary</h2><table>' >> security-report/index.html
+          echo '<tr><th>Scan Type</th><th>Status</th><th>Issues Found</th></tr>' >> security-report/index.html
+          echo "<tr><td>Code Security</td><td class=\"${{ needs.code-security.result == 'success' && 'pass' || 'fail' }}\">${{ needs.code-security.result }}</td><td>-</td></tr>" >> security-report/index.html
+          echo "<tr><td>Dependency Security</td><td class=\"${{ needs.dependency-security.result == 'success' && 'pass' || 'fail' }}\">${{ needs.dependency-security.result }}</td><td>-</td></tr>" >> security-report/index.html
+          echo "<tr><td>Container Security</td><td class=\"${{ needs.container-security.result == 'success' && 'pass' || 'fail' }}\">${{ needs.container-security.result }}</td><td>-</td></tr>" >> security-report/index.html
+          echo '</table></div>' >> security-report/index.html
+          
+          echo '</body></html>' >> security-report/index.html
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: security-report/
+
+      - name: Create security issue on failure
+        if: needs.code-security.result == 'failure' || needs.dependency-security.result == 'failure' || needs.container-security.result == 'failure'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const title = '🚨 Security Scan Failure - ' + new Date().toISOString().split('T')[0];
+            const body = `
+            ## Security Scan Failed
+            
+            **Commit**: ${{ github.sha }}
+            **Branch**: ${{ github.ref_name }}
+            **Workflow**: ${{ github.run_id }}
+            
+            ### Failed Scans:
+            - Code Security: ${{ needs.code-security.result }}
+            - Dependency Security: ${{ needs.dependency-security.result }}
+            - Container Security: ${{ needs.container-security.result }}
+            
+            Please review the scan results and address any security issues found.
+            
+            **Action Required**: Security team review
+            `;
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'bug', 'high-priority']
+            });
+
+      - name: Notify security team on critical issues
+        if: needs.code-security.result == 'failure' || needs.dependency-security.result == 'failure'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#security-alerts'
+          text: '🚨 Critical security scan failure in Acousto-Gen'
+          webhook_url: ${{ secrets.SECURITY_WEBHOOK }}

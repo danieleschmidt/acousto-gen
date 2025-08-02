@@ -1,0 +1,80 @@
+{
+  "python.defaultInterpreterPath": "./venv/bin/python",
+  "python.linting.enabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.linting.ruffEnabled": true,
+  "python.formatting.provider": "none",
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "editor.formatOnSave": true,
+  "editor.rulers": [88],
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/htmlcov": true,
+    "**/.coverage": true,
+    "**/build": true,
+    "**/dist": true,
+    "**/*.egg-info": true
+  },
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/htmlcov": true,
+    "**/build": true,
+    "**/dist": true,
+    "**/*.egg-info": true
+  },
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.extraPaths": ["./acousto_gen"],
+  "ruff.lint.args": ["--line-length=88"],
+  "ruff.format.args": ["--line-length=88"],
+  "mypy.dmypyExecutable": "./venv/bin/dmypy",
+  "jupyter.askForKernelRestart": false,
+  "jupyter.interactiveWindow.creationMode": "perFile",
+  "notebook.formatOnCellExecution": true,
+  "notebook.formatOnSave.enabled": true,
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit"
+    }
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one",
+    "editor.wordWrap": "on",
+    "files.trimTrailingWhitespace": false
+  },
+  "git.inputValidationLength": 72,
+  "git.inputValidationSubjectLength": 50,
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "workbench.colorCustomizations": {
+    "terminal.background": "#1e1e1e",
+    "terminal.foreground": "#cccccc"
+  }
+}

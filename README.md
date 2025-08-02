@@ -28,9 +28,22 @@ pip install acousto-gen[hardware]
 pip install acousto-gen[full]
 
 # From source
-git clone https://github.com/yourusername/acousto-gen
+git clone https://github.com/danieleschmidt/acousto-gen
 cd acousto-gen
 pip install -e ".[dev]"
+```
+
+### Docker Installation
+
+```bash
+# Run with Docker
+docker run -it acousto-gen/acousto-gen:latest
+
+# Development environment
+docker-compose up acousto-gen-dev
+
+# GPU-accelerated version
+docker-compose --profile gpu up acousto-gen-gpu
 ```
 
 ## Quick Start

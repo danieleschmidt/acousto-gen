@@ -1,0 +1,63 @@
+{
+  "name": "Acousto-Gen Development",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bullseye",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/cuda:1": {
+      "installCudnn": true
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.mypy-type-checker",
+        "charliermarsh.ruff",
+        "ms-python.autopep8",
+        "ms-toolsai.jupyter",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "redhat.vscode-yaml",
+        "ms-vscode.vscode-json",
+        "yzhang.markdown-all-in-one",
+        "DavidAnson.vscode-markdownlint"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.mypyEnabled": true,
+        "python.formatting.provider": "none",
+        "python.linting.ruffEnabled": true,
+        "editor.formatOnSave": true,
+        "editor.rulers": [88],
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "forwardPorts": [8888, 6006],
+  "portsAttributes": {
+    "8888": {
+      "label": "Jupyter",
+      "onAutoForward": "notify"
+    },
+    "6006": {
+      "label": "TensorBoard",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "pip install -e '.[dev]' && pre-commit install",
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  "containerEnv": {
+    "PYTHONPATH": "/workspaces/acousto-gen",
+    "CUDA_VISIBLE_DEVICES": "0"
+  }
+}
