@@ -1,0 +1,24 @@
+# Grafana dashboard provisioning
+
+apiVersion: 1
+
+providers:
+  - name: 'acousto-gen-dashboards'
+    orgId: 1
+    folder: 'Acousto-Gen'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+
+  - name: 'system-dashboards'
+    orgId: 1
+    folder: 'System'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/system

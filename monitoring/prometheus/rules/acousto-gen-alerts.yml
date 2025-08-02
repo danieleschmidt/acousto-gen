@@ -1,0 +1,178 @@
+# Alert rules for Acousto-Gen monitoring
+
+groups:
+  - name: acousto-gen.safety
+    interval: 1s  # High frequency for safety alerts
+    rules:
+      - alert: AcousticPressureExceeded
+        expr: acousto_gen_pressure_max > 5000
+        for: 0s  # Immediate alert
+        labels:
+          severity: critical
+          component: safety
+        annotations:
+          summary: "Acoustic pressure limit exceeded"
+          description: "Maximum acoustic pressure {{ $value }}Pa exceeds safety limit of 5000Pa"
+          runbook_url: "https://docs.acousto-gen.org/runbooks/pressure-exceeded"
+
+      - alert: TemperatureHigh
+        expr: acousto_gen_temperature_celsius > 45
+        for: 5s
+        labels:
+          severity: critical
+          component: safety
+        annotations:
+          summary: "Array temperature too high"
+          description: "Transducer array temperature {{ $value }}°C exceeds safety limit"
+          runbook_url: "https://docs.acousto-gen.org/runbooks/temperature-high"
+
+      - alert: EmergencyStopTriggered
+        expr: acousto_gen_emergency_stop_active == 1
+        for: 0s
+        labels:
+          severity: critical
+          component: safety
+        annotations:
+          summary: "Emergency stop activated"
+          description: "Emergency stop has been triggered - all acoustic output halted"
+          runbook_url: "https://docs.acousto-gen.org/runbooks/emergency-stop"
+
+      - alert: SafetyMonitorDown
+        expr: up{job="safety-monitor"} == 0
+        for: 10s
+        labels:
+          severity: critical
+          component: safety
+        annotations:
+          summary: "Safety monitoring system offline"
+          description: "Safety monitoring system is not responding"
+          runbook_url: "https://docs.acousto-gen.org/runbooks/safety-monitor-down"
+
+  - name: acousto-gen.hardware
+    interval: 10s
+    rules:
+      - alert: TransducerArrayDisconnected
+        expr: acousto_gen_array_connected == 0
+        for: 30s
+        labels:
+          severity: warning
+          component: hardware
+        annotations:
+          summary: "Transducer array disconnected"
+          description: "Array {{ $labels.array_id }} is not responding"
+          runbook_url: "https://docs.acousto-gen.org/runbooks/array-disconnected"
+
+      - alert: CalibrationExpired
+        expr: time() - acousto_gen_calibration_timestamp > 86400
+        for: 0s
+        labels:
+          severity: warning
+          component: hardware
+        annotations:
+          summary: "Array calibration expired"
+          description: "Array {{ $labels.array_id }} calibration is over 24 hours old"
+          runbook_url: "https://docs.acousto-gen.org/runbooks/calibration-expired"
+
+      - alert: ElementFailure
+        expr: acousto_gen_failed_elements > 0
+        for: 60s
+        labels:
+          severity: warning
+          component: hardware
+        annotations:
+          summary: "Transducer element failure detected"
+          description: "{{ $value }} elements failing on array {{ $labels.array_id }}"
+          runbook_url: "https://docs.acousto-gen.org/runbooks/element-failure"
+
+  - name: acousto-gen.performance
+    interval: 15s
+    rules:
+      - alert: OptimizationSlow
+        expr: acousto_gen_optimization_duration_seconds > 30
+        for: 60s
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "Optimization taking too long"
+          description: "Phase optimization taking {{ $value }}s, expected <10s"
+          runbook_url: "https://docs.acousto-gen.org/runbooks/optimization-slow"
+
+      - alert: MemoryUsageHigh
+        expr: process_resident_memory_bytes / 1024 / 1024 / 1024 > 8
+        for: 300s
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage {{ $value }}GB exceeds 8GB threshold"
+          runbook_url: "https://docs.acousto-gen.org/runbooks/memory-high"
+
+      - alert: GPUUtilizationLow
+        expr: acousto_gen_gpu_utilization_percent < 10 and acousto_gen_using_gpu == 1
+        for: 300s
+        labels:
+          severity: info
+          component: performance
+        annotations:
+          summary: "Low GPU utilization"
+          description: "GPU utilization only {{ $value }}% - consider CPU optimization"
+
+  - name: acousto-gen.application
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up{job="acousto-gen"} == 0
+        for: 60s
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "Acousto-Gen service down"
+          description: "Service {{ $labels.instance }} is not responding"
+          runbook_url: "https://docs.acousto-gen.org/runbooks/service-down"
+
+      - alert: ErrorRateHigh
+        expr: rate(acousto_gen_errors_total[5m]) > 0.1
+        for: 120s
+        labels:
+          severity: warning
+          component: application
+        annotations:
+          summary: "High error rate"
+          description: "Error rate {{ $value }} errors/sec exceeds threshold"
+          runbook_url: "https://docs.acousto-gen.org/runbooks/error-rate-high"
+
+      - alert: RequestLatencyHigh
+        expr: histogram_quantile(0.95, rate(acousto_gen_request_duration_seconds_bucket[5m])) > 1.0
+        for: 300s
+        labels:
+          severity: warning
+          component: application
+        annotations:
+          summary: "High request latency"
+          description: "95th percentile latency {{ $value }}s exceeds 1s threshold"
+
+  - name: acousto-gen.system
+    interval: 30s
+    rules:
+      - alert: DiskSpaceLow
+        expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} * 100 < 10
+        for: 300s
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space on {{ $labels.instance }} is {{ $value }}% full"
+
+      - alert: CPUUsageHigh
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 300s
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage on {{ $labels.instance }} is {{ $value }}%"
