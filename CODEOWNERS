@@ -1,0 +1,50 @@
+# CODEOWNERS for Acousto-Gen
+# This file defines who is responsible for reviewing changes to specific parts of the codebase.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global owners (fallback for any files not covered by specific rules)
+* @danieleschmidt
+
+# Core library code
+/acousto_gen/ @danieleschmidt
+
+# Safety-critical components (require additional safety officer review)
+/acousto_gen/safety/ @danieleschmidt @safety-team
+/acousto_gen/hardware/ @danieleschmidt @hardware-team
+
+# Medical applications (require medical reviewer)
+/acousto_gen/applications/medical.py @danieleschmidt @medical-reviewers
+
+# Documentation
+/docs/ @danieleschmidt @doc-team
+README.md @danieleschmidt @doc-team
+CHANGELOG.md @danieleschmidt
+
+# Configuration and infrastructure
+/docker-compose.yml @danieleschmidt @devops-team
+/Dockerfile @danieleschmidt @devops-team
+/.github/ @danieleschmidt @devops-team
+/monitoring/ @danieleschmidt @devops-team
+
+# CI/CD workflows (require DevOps review)
+/.github/workflows/ @danieleschmidt @devops-team @security-team
+
+# Security-sensitive files (require security review)
+/SECURITY.md @danieleschmidt @security-team
+/.github/dependabot.yml @danieleschmidt @security-team
+/scripts/automation/ @danieleschmidt @security-team
+
+# Testing infrastructure
+/tests/ @danieleschmidt @qa-team
+/conftest.py @danieleschmidt @qa-team
+/pytest.ini @danieleschmidt @qa-team
+
+# Build and packaging
+/pyproject.toml @danieleschmidt @build-team
+/Makefile @danieleschmidt @build-team
+/scripts/ @danieleschmidt @build-team
+
+# Scripts and automation
+/scripts/automation/ @danieleschmidt @devops-team
+/scripts/metrics/ @danieleschmidt @devops-team
+/scripts/maintenance/ @danieleschmidt @devops-team
