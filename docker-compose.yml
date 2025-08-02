@@ -1,0 +1,262 @@
+version: '3.8'
+
+services:
+  # ===========================================================================
+  # Development service - for interactive development
+  # ===========================================================================
+  acousto-gen-dev:
+    build:
+      context: .
+      target: development
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    image: acousto-gen:dev
+    container_name: acousto-gen-dev
+    volumes:
+      - .:/home/acousto/work:rw
+      - acousto-gen-venv:/home/acousto/venv
+      - acousto-gen-cache:/home/acousto/.cache
+    ports:
+      - "8888:8888"  # Jupyter Lab
+      - "6006:6006"  # TensorBoard
+      - "8080:8080"  # Additional services
+    environment:
+      - ACOUSTO_LOG_LEVEL=DEBUG
+      - ACOUSTO_DEVICE=cpu  # Override with gpu if CUDA available
+      - JUPYTER_ENABLE_LAB=yes
+    stdin_open: true
+    tty: true
+    command: bash
+    networks:
+      - acousto-net
+
+  # ===========================================================================
+  # Jupyter service - for notebook development
+  # ===========================================================================
+  jupyter:
+    build:
+      context: .
+      target: jupyter
+    image: acousto-gen:jupyter
+    container_name: acousto-gen-jupyter
+    volumes:
+      - .:/home/acousto/work:rw
+      - ./notebooks:/home/acousto/notebooks:rw
+      - acousto-gen-cache:/home/acousto/.cache
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_TOKEN=acousto-gen-dev-token
+      - JUPYTER_LAB_ENABLE=yes
+    networks:
+      - acousto-net
+
+  # ===========================================================================
+  # GPU service - for CUDA acceleration
+  # ===========================================================================
+  acousto-gen-gpu:
+    build:
+      context: .
+      target: gpu
+    image: acousto-gen:gpu
+    container_name: acousto-gen-gpu
+    volumes:
+      - .:/home/acousto/work:rw
+      - acousto-gen-gpu-cache:/home/acousto/.cache
+    environment:
+      - ACOUSTO_DEVICE=cuda
+      - CUDA_VISIBLE_DEVICES=0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - acousto-net
+    profiles:
+      - gpu
+
+  # ===========================================================================
+  # Testing service - for automated testing
+  # ===========================================================================
+  acousto-gen-test:
+    build:
+      context: .
+      target: testing
+    image: acousto-gen:test
+    container_name: acousto-gen-test
+    volumes:
+      - ./tests:/home/acousto/tests:ro
+      - ./acousto_gen:/home/acousto/acousto_gen:ro
+      - acousto-gen-test-cache:/home/acousto/.cache
+    environment:
+      - ACOUSTO_LOG_LEVEL=INFO
+      - PYTEST_CURRENT_TEST=""
+    command: ["pytest", "--cov=acousto_gen", "--cov-report=term-missing", "-v"]
+    networks:
+      - acousto-net
+    profiles:
+      - test
+
+  # ===========================================================================
+  # Production service - for production deployment
+  # ===========================================================================
+  acousto-gen-prod:
+    build:
+      context: .
+      target: production
+    image: acousto-gen:prod
+    container_name: acousto-gen-prod
+    volumes:
+      - acousto-gen-data:/home/acousto/data:rw
+    environment:
+      - ACOUSTO_LOG_LEVEL=INFO
+      - ACOUSTO_ENABLE_SAFETY=true
+    restart: unless-stopped
+    networks:
+      - acousto-net
+    profiles:
+      - production
+
+  # ===========================================================================
+  # Documentation service - for building and serving docs
+  # ===========================================================================
+  docs:
+    build:
+      context: .
+      target: development
+    image: acousto-gen:docs
+    container_name: acousto-gen-docs
+    volumes:
+      - ./docs:/home/acousto/docs:rw
+      - acousto-gen-docs-build:/home/acousto/docs/_build
+    ports:
+      - "8000:8000"
+    working_dir: /home/acousto/docs
+    command: ["python", "-m", "http.server", "8000", "--directory", "_build/html"]
+    networks:
+      - acousto-net
+    profiles:
+      - docs
+
+  # ===========================================================================
+  # Database service - for experiment tracking (optional)
+  # ===========================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: acousto-gen-db
+    environment:
+      - POSTGRES_DB=acousto_gen
+      - POSTGRES_USER=acousto
+      - POSTGRES_PASSWORD=acousto_dev_password
+    volumes:
+      - acousto-gen-db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - acousto-net
+    profiles:
+      - database
+
+  # ===========================================================================
+  # Redis service - for caching and task queues (optional)
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: acousto-gen-redis
+    volumes:
+      - acousto-gen-redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - acousto-net
+    profiles:
+      - cache
+
+  # ===========================================================================
+  # Monitoring services
+  # ===========================================================================
+  
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: acousto-gen-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - acousto-gen-prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - acousto-net
+    profiles:
+      - monitoring
+
+  # Grafana for metrics visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: acousto-gen-grafana
+    volumes:
+      - acousto-gen-grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=acousto_admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - acousto-net
+    profiles:
+      - monitoring
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  acousto-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  # Development volumes
+  acousto-gen-venv:
+    driver: local
+  acousto-gen-cache:
+    driver: local
+  acousto-gen-gpu-cache:
+    driver: local
+  acousto-gen-test-cache:
+    driver: local
+  
+  # Data volumes
+  acousto-gen-data:
+    driver: local
+  acousto-gen-docs-build:
+    driver: local
+  
+  # Database volumes
+  acousto-gen-db-data:
+    driver: local
+  acousto-gen-redis-data:
+    driver: local
+  
+  # Monitoring volumes
+  acousto-gen-prometheus-data:
+    driver: local
+  acousto-gen-grafana-data:
+    driver: local
