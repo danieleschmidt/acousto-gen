@@ -211,3 +211,19 @@ __marimo__/
 .terragon/cache/
 .terragon/logs/
 .terragon/backups/
+
+# Acousto-Gen specific files
+.acousto_cache/
+*.h5
+*.hdf5
+calibration_data/
+simulation_results/
+acoustic_fields/
+hardware_logs/
+safety_logs/
+profiles/
+benchmarks/
+experiments/
+checkpoints/
+models/pretrained/
+data/generated/
