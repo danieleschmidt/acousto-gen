@@ -355,7 +355,7 @@ class TargetPattern:
 
 
 class FieldMetrics:
-    """Metrics for evaluating acoustic field quality."""
+    """Comprehensive metrics for evaluating acoustic field quality and performance."""
     
     @staticmethod
     def calculate_focus_quality(
@@ -364,7 +364,7 @@ class FieldMetrics:
         focal_radius: float = 0.005
     ) -> Dict[str, float]:
         """
-        Calculate focus quality metrics.
+        Calculate comprehensive focus quality metrics.
         
         Args:
             field: Acoustic field
@@ -384,7 +384,10 @@ class FieldMetrics:
                 'focus_error': np.inf,
                 'peak_pressure': 0,
                 'focus_size': np.inf,
-                'contrast_ratio': 0
+                'contrast_ratio': 0,
+                'fwhm': np.inf,
+                'efficiency': 0,
+                'sidelobe_ratio': np.inf
             }
         
         actual_focus = maxima[0]
@@ -395,22 +398,98 @@ class FieldMetrics:
         # Peak pressure
         peak_pressure = actual_focus.get_amplitude()
         
-        # Focus size (FWHM)
-        focus_region = field.interpolate_at_points(
-            actual_focus.position + np.random.randn(100, 3) * focal_radius
-        )
-        focus_size = np.std(np.abs(focus_region))
+        # Focus size (FWHM) - more accurate calculation
+        fwhm = FieldMetrics._calculate_fwhm(field, actual_focus.position)
         
         # Contrast ratio (peak to average)
         avg_pressure = np.mean(amplitude)
         contrast_ratio = peak_pressure / (avg_pressure + 1e-10)
         
+        # Acoustic efficiency (energy in focus vs total)
+        efficiency = FieldMetrics._calculate_efficiency(field, actual_focus.position, focal_radius)
+        
+        # Sidelobe ratio
+        sidelobe_ratio = FieldMetrics._calculate_sidelobe_ratio(field, actual_focus.position)
+        
         return {
             'focus_error': focus_error,
             'peak_pressure': peak_pressure,
-            'focus_size': focus_size,
-            'contrast_ratio': contrast_ratio
+            'focus_size': fwhm,
+            'fwhm': fwhm,
+            'contrast_ratio': contrast_ratio,
+            'efficiency': efficiency,
+            'sidelobe_ratio': sidelobe_ratio
         }
+    
+    @staticmethod
+    def _calculate_fwhm(field: AcousticField, focus_position: np.ndarray) -> float:
+        """Calculate Full Width at Half Maximum of the focus."""
+        amplitude = field.get_amplitude_field()
+        
+        # Find focus index
+        focus_idx = [
+            np.argmin(np.abs(field.x_coords - focus_position[0])),
+            np.argmin(np.abs(field.y_coords - focus_position[1])),
+            np.argmin(np.abs(field.z_coords - focus_position[2]))
+        ]
+        
+        peak_value = amplitude[focus_idx[0], focus_idx[1], focus_idx[2]]
+        half_max = peak_value / 2
+        
+        # Calculate FWHM in each direction
+        fwhm_x = FieldMetrics._fwhm_1d(amplitude[focus_idx[0], focus_idx[1], :], field.z_coords, half_max)
+        fwhm_y = FieldMetrics._fwhm_1d(amplitude[focus_idx[0], :, focus_idx[2]], field.y_coords, half_max)
+        fwhm_z = FieldMetrics._fwhm_1d(amplitude[:, focus_idx[1], focus_idx[2]], field.x_coords, half_max)
+        
+        # Return average FWHM
+        return np.mean([fwhm_x, fwhm_y, fwhm_z])
+    
+    @staticmethod
+    def _fwhm_1d(profile: np.ndarray, coords: np.ndarray, half_max: float) -> float:
+        """Calculate FWHM for 1D profile."""
+        indices = np.where(profile >= half_max)[0]
+        if len(indices) < 2:
+            return np.inf
+        return coords[indices[-1]] - coords[indices[0]]
+    
+    @staticmethod
+    def _calculate_efficiency(field: AcousticField, focus_position: np.ndarray, radius: float) -> float:
+        """Calculate acoustic efficiency (energy in focus region vs total)."""
+        amplitude = field.get_amplitude_field()
+        intensity = amplitude**2
+        
+        # Define focus region
+        r = np.sqrt((field.X - focus_position[0])**2 + 
+                   (field.Y - focus_position[1])**2 + 
+                   (field.Z - focus_position[2])**2)
+        
+        focus_mask = r <= radius
+        focus_energy = np.sum(intensity[focus_mask])
+        total_energy = np.sum(intensity)
+        
+        return focus_energy / (total_energy + 1e-10)
+    
+    @staticmethod
+    def _calculate_sidelobe_ratio(field: AcousticField, focus_position: np.ndarray) -> float:
+        """Calculate ratio of peak sidelobe to main lobe."""
+        amplitude = field.get_amplitude_field()
+        
+        # Find main peak value
+        main_peak = np.max(amplitude)
+        
+        # Mask out main lobe region
+        r = np.sqrt((field.X - focus_position[0])**2 + 
+                   (field.Y - focus_position[1])**2 + 
+                   (field.Z - focus_position[2])**2)
+        
+        main_lobe_radius = 0.01  # 1cm radius around main lobe
+        sidelobe_mask = r > main_lobe_radius
+        
+        if np.any(sidelobe_mask):
+            peak_sidelobe = np.max(amplitude[sidelobe_mask])
+            return 20 * np.log10(peak_sidelobe / main_peak)  # dB
+        else:
+            return -np.inf
     
     @staticmethod
     def calculate_uniformity(
@@ -460,3 +539,301 @@ class FieldMetrics:
             uniformity = 0
         
         return uniformity
+    
+    @staticmethod
+    def calculate_spatial_resolution(
+        field: AcousticField,
+        frequency: float = 40e3,
+        medium_speed: float = 343
+    ) -> Dict[str, float]:
+        """
+        Calculate spatial resolution characteristics.
+        
+        Args:
+            field: Acoustic field
+            frequency: Operating frequency in Hz
+            medium_speed: Speed of sound in m/s
+            
+        Returns:
+            Dictionary with resolution metrics
+        """
+        wavelength = medium_speed / frequency
+        
+        # Theoretical diffraction limit
+        diffraction_limit = wavelength / 2
+        
+        # Measured resolution (average FWHM of all foci)
+        maxima = field.find_maxima(threshold=0.8)
+        if maxima:
+            fwhm_values = [FieldMetrics._calculate_fwhm(field, m.position) for m in maxima]
+            measured_resolution = np.mean(fwhm_values)
+        else:
+            measured_resolution = np.inf
+        
+        # Resolution efficiency (diffraction limit / measured)
+        resolution_efficiency = diffraction_limit / measured_resolution if measured_resolution > 0 else 0
+        
+        return {
+            'wavelength': wavelength,
+            'diffraction_limit': diffraction_limit,
+            'measured_resolution': measured_resolution,
+            'resolution_efficiency': resolution_efficiency
+        }
+    
+    @staticmethod
+    def calculate_field_statistics(field: AcousticField) -> Dict[str, float]:
+        """
+        Calculate comprehensive field statistics.
+        
+        Args:
+            field: Acoustic field
+            
+        Returns:
+            Dictionary with statistical metrics
+        """
+        amplitude = field.get_amplitude_field()
+        intensity = field.get_intensity_field()
+        
+        return {
+            # Pressure statistics
+            'max_pressure': np.max(amplitude),
+            'min_pressure': np.min(amplitude),
+            'mean_pressure': np.mean(amplitude),
+            'std_pressure': np.std(amplitude),
+            'rms_pressure': np.sqrt(np.mean(amplitude**2)),
+            
+            # Intensity statistics
+            'max_intensity': np.max(intensity),
+            'mean_intensity': np.mean(intensity),
+            'total_power': np.sum(intensity) * field.resolution**3,
+            
+            # Spatial characteristics
+            'peak_to_peak_ratio': np.max(amplitude) / (np.min(amplitude) + 1e-10),
+            'dynamic_range': 20 * np.log10(np.max(amplitude) / (np.mean(amplitude) + 1e-10)),
+            'crest_factor': np.max(amplitude) / (np.sqrt(np.mean(amplitude**2)) + 1e-10),
+            
+            # Field quality
+            'spatial_coherence': FieldMetrics._calculate_spatial_coherence(field),
+            'phase_uniformity': FieldMetrics._calculate_phase_uniformity(field)
+        }
+    
+    @staticmethod
+    def _calculate_spatial_coherence(field: AcousticField) -> float:
+        """Calculate spatial coherence of the field."""
+        phase = field.get_phase_field()
+        
+        # Calculate phase gradients
+        grad_x = np.gradient(phase, axis=0)
+        grad_y = np.gradient(phase, axis=1)
+        grad_z = np.gradient(phase, axis=2)
+        
+        # Coherence as inverse of phase gradient magnitude
+        grad_magnitude = np.sqrt(grad_x**2 + grad_y**2 + grad_z**2)
+        coherence = 1 / (1 + np.mean(grad_magnitude))
+        
+        return coherence
+    
+    @staticmethod
+    def _calculate_phase_uniformity(field: AcousticField) -> float:
+        """Calculate phase uniformity across the field."""
+        phase = field.get_phase_field()
+        amplitude = field.get_amplitude_field()
+        
+        # Weight phase by amplitude
+        weighted_phase = phase * amplitude
+        total_amplitude = np.sum(amplitude)
+        
+        if total_amplitude > 0:
+            mean_phase = np.sum(weighted_phase) / total_amplitude
+            phase_variance = np.sum(amplitude * (phase - mean_phase)**2) / total_amplitude
+            uniformity = 1 / (1 + phase_variance)
+        else:
+            uniformity = 0
+        
+        return uniformity
+
+
+def create_focus_target(
+    position: List[float],
+    pressure: float = 3000,
+    width: float = 0.005,
+    shape: Tuple[int, int, int] = (50, 50, 50),
+    bounds: List[Tuple[float, float]] = None
+) -> AcousticField:
+    """
+    Create a target field with a single focus point.
+    
+    Args:
+        position: Focus position [x, y, z] in meters
+        pressure: Target pressure in Pa
+        width: Focus width (standard deviation) in meters
+        shape: Grid shape (nx, ny, nz)
+        bounds: Physical bounds [(xmin,xmax), (ymin,ymax), (zmin,zmax)]
+        
+    Returns:
+        AcousticField with Gaussian focus
+    """
+    if bounds is None:
+        bounds = [(-0.1, 0.1), (-0.1, 0.1), (0, 0.2)]
+    
+    # Create coordinate grids
+    x = np.linspace(bounds[0][0], bounds[0][1], shape[0])
+    y = np.linspace(bounds[1][0], bounds[1][1], shape[1])
+    z = np.linspace(bounds[2][0], bounds[2][1], shape[2])
+    X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
+    
+    # Create Gaussian focus
+    r_squared = ((X - position[0])**2 + (Y - position[1])**2 + (Z - position[2])**2)
+    field_data = pressure * np.exp(-r_squared / (2 * width**2))
+    
+    return AcousticField(
+        data=field_data.astype(complex),
+        bounds=bounds,
+        resolution=(bounds[0][1] - bounds[0][0]) / shape[0],
+        frequency=40e3,
+        metadata={'type': 'single_focus', 'target_position': position}
+    )
+
+
+def create_multi_focus_target(
+    focal_points: List[Tuple[List[float], float]],
+    shape: Tuple[int, int, int] = (50, 50, 50),
+    bounds: List[Tuple[float, float]] = None,
+    width: float = 0.005
+) -> AcousticField:
+    """
+    Create a target field with multiple focus points.
+    
+    Args:
+        focal_points: List of (position, pressure) tuples
+        shape: Grid shape (nx, ny, nz)
+        bounds: Physical bounds
+        width: Focus width in meters
+        
+    Returns:
+        AcousticField with multiple foci
+    """
+    if bounds is None:
+        bounds = [(-0.1, 0.1), (-0.1, 0.1), (0, 0.2)]
+    
+    # Create coordinate grids
+    x = np.linspace(bounds[0][0], bounds[0][1], shape[0])
+    y = np.linspace(bounds[1][0], bounds[1][1], shape[1])
+    z = np.linspace(bounds[2][0], bounds[2][1], shape[2])
+    X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
+    
+    # Initialize field
+    field_data = np.zeros(shape, dtype=complex)
+    
+    # Add each focus
+    for position, pressure in focal_points:
+        r_squared = ((X - position[0])**2 + (Y - position[1])**2 + (Z - position[2])**2)
+        gaussian = pressure * np.exp(-r_squared / (2 * width**2))
+        field_data += gaussian
+    
+    return AcousticField(
+        data=field_data,
+        bounds=bounds,
+        resolution=(bounds[0][1] - bounds[0][0]) / shape[0],
+        frequency=40e3,
+        metadata={'type': 'multi_focus', 'focal_points': focal_points}
+    )
+
+
+def create_shaped_target(
+    shape_type: str,
+    parameters: Dict[str, Any],
+    grid_shape: Tuple[int, int, int] = (50, 50, 50),
+    bounds: List[Tuple[float, float]] = None
+) -> AcousticField:
+    """
+    Create target fields with specific shapes.
+    
+    Args:
+        shape_type: Type of shape ('line', 'circle', 'helix', 'custom')
+        parameters: Shape-specific parameters
+        grid_shape: Grid dimensions
+        bounds: Physical bounds
+        
+    Returns:
+        AcousticField with shaped pressure pattern
+    """
+    if bounds is None:
+        bounds = [(-0.1, 0.1), (-0.1, 0.1), (0, 0.2)]
+    
+    # Create coordinate grids
+    x = np.linspace(bounds[0][0], bounds[0][1], grid_shape[0])
+    y = np.linspace(bounds[1][0], bounds[1][1], grid_shape[1])
+    z = np.linspace(bounds[2][0], bounds[2][1], grid_shape[2])
+    X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
+    
+    field_data = np.zeros(grid_shape, dtype=complex)
+    
+    if shape_type == 'line':
+        # Create line of foci
+        start = parameters['start']
+        end = parameters['end']
+        num_points = parameters.get('num_points', 10)
+        pressure = parameters.get('pressure', 3000)
+        width = parameters.get('width', 0.005)
+        
+        for i in range(num_points):
+            t = i / (num_points - 1)
+            pos = [start[j] + t * (end[j] - start[j]) for j in range(3)]
+            
+            r_squared = ((X - pos[0])**2 + (Y - pos[1])**2 + (Z - pos[2])**2)
+            gaussian = pressure * np.exp(-r_squared / (2 * width**2))
+            field_data += gaussian
+    
+    elif shape_type == 'circle':
+        # Create circular array of foci
+        center = parameters['center']
+        radius = parameters['radius']
+        num_points = parameters.get('num_points', 8)
+        pressure = parameters.get('pressure', 3000)
+        width = parameters.get('width', 0.005)
+        
+        for i in range(num_points):
+            angle = 2 * np.pi * i / num_points
+            pos = [
+                center[0] + radius * np.cos(angle),
+                center[1] + radius * np.sin(angle),
+                center[2]
+            ]
+            
+            r_squared = ((X - pos[0])**2 + (Y - pos[1])**2 + (Z - pos[2])**2)
+            gaussian = pressure * np.exp(-r_squared / (2 * width**2))
+            field_data += gaussian
+    
+    elif shape_type == 'helix':
+        # Create helical pattern
+        center = parameters['center']
+        radius = parameters['radius']
+        height = parameters['height']
+        turns = parameters.get('turns', 2)
+        num_points = parameters.get('num_points', 20)
+        pressure = parameters.get('pressure', 3000)
+        width = parameters.get('width', 0.005)
+        
+        for i in range(num_points):
+            t = i / (num_points - 1)
+            angle = 2 * np.pi * turns * t
+            z_offset = height * t
+            
+            pos = [
+                center[0] + radius * np.cos(angle),
+                center[1] + radius * np.sin(angle),
+                center[2] + z_offset
+            ]
+            
+            r_squared = ((X - pos[0])**2 + (Y - pos[1])**2 + (Z - pos[2])**2)
+            gaussian = pressure * np.exp(-r_squared / (2 * width**2))
+            field_data += gaussian
+    
+    return AcousticField(
+        data=field_data,
+        bounds=bounds,
+        resolution=(bounds[0][1] - bounds[0][0]) / grid_shape[0],
+        frequency=40e3,
+        metadata={'type': shape_type, 'parameters': parameters}
+    )
