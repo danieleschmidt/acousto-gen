@@ -1,0 +1,45 @@
+{
+  "name": "acousto-gen",
+  "version": "1.0.0",
+  "description": "Generative acoustic holography toolkit",
+  "main": "src/main.py",
+  "scripts": {
+    "start": "python src/main.py",
+    "dev": "python src/main.py --reload --debug",
+    "test": "pytest tests/ -v",
+    "test:coverage": "pytest tests/ --cov=src --cov-report=html",
+    "lint": "flake8 src/ tests/ && mypy src/",
+    "format": "black src/ tests/",
+    "build": "python setup.py build",
+    "docker:build": "docker build -t acousto-gen .",
+    "docker:run": "docker run -p 8000:8000 acousto-gen",
+    "docs": "cd docs && make html",
+    "clean": "find . -type d -name __pycache__ -exec rm -rf {} + && rm -rf build dist *.egg-info"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danieleschmidt/acousto-gen.git"
+  },
+  "keywords": [
+    "acoustics",
+    "holography",
+    "ultrasound",
+    "levitation",
+    "haptics",
+    "physics"
+  ],
+  "author": "Daniel Schmidt",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/danieleschmidt/acousto-gen/issues"
+  },
+  "homepage": "https://github.com/danieleschmidt/acousto-gen#readme",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.8"
+  }
+}
