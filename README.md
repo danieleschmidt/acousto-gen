@@ -538,9 +538,9 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 ```bibtex
 @software{acousto_gen,
   title={Acousto-Gen: Generative Acoustic Holography Toolkit},
-  author={Your Name},
+  author={Daniel Schmidt},
   year={2025},
-  url={https://github.com/yourusername/acousto-gen}
+  url={https://github.com/danieleschmidt/acousto-gen}
 }
 
 @article{cambridge_holography_2024,
