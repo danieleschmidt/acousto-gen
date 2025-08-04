@@ -89,6 +89,11 @@ class TransducerArray(ABC):
         """Get all element orientations as Nx3 array."""
         return np.array([elem.orientation for elem in self.elements])
     
+    @property
+    def positions(self) -> np.ndarray:
+        """Get all element positions as Nx3 array (property for compatibility)."""
+        return self.get_positions()
+    
     def set_phases(self, phases: np.ndarray):
         """
         Set phase values for all elements.
