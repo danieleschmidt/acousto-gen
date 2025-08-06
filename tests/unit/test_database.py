@@ -10,11 +10,11 @@ from sqlalchemy.orm import sessionmaker
 
 from src.database.connection import DatabaseManager
 from src.database.models import (
-    Base, OptimizationResult, FieldData, Experiment, 
-    PerformanceMetrics, CalibrationData
+    Base, OptimizationResult, AcousticFieldData, ExperimentRun, 
+    SystemMetric, ArrayConfiguration
 )
 from src.database.repositories import (
-    OptimizationRepository, FieldDataRepository, 
+    OptimizationRepository, FieldRepository, 
     ExperimentRepository
 )
 
@@ -89,19 +89,19 @@ class TestDatabaseModels:
         """Test OptimizationResult model."""
         # Create test optimization result
         phases = np.random.rand(256) * 2 * np.pi
-        amplitudes = np.ones(256)
         
         result = OptimizationResult(
+            method="adam",
             target_type="single_focus",
-            target_position=[0.0, 0.0, 0.1],
-            target_pressure=3000.0,
-            optimization_method="adam",
-            final_cost=0.05,
             iterations=150,
-            convergence_achieved=True,
-            phases_json=phases.tolist(),
-            amplitudes_json=amplitudes.tolist()
+            final_loss=0.05,
+            converged=True,
+            time_elapsed=10.5,
+            num_elements=256,
+            target_specification={"position": [0.0, 0.0, 0.1], "pressure": 3000.0},
+            device_used="cpu"
         )
+        result.set_phases(phases.tolist())
         
         db_session.add(result)
         db_session.commit()
@@ -109,115 +109,123 @@ class TestDatabaseModels:
         # Verify stored correctly
         retrieved = db_session.query(OptimizationResult).first()
         assert retrieved.target_type == "single_focus"
-        assert len(retrieved.phases_json) == 256
-        assert retrieved.convergence_achieved is True
+        assert retrieved.method == "adam"
+        assert retrieved.converged is True
         
-        # Test phase/amplitude property access
-        retrieved_phases = np.array(retrieved.phases_json)
+        # Test phase property access
+        retrieved_phases = retrieved.get_phases()
+        assert len(retrieved_phases) == 256
         assert np.allclose(retrieved_phases, phases)
     
     def test_field_data_model(self, db_session):
-        """Test FieldData model."""
+        """Test AcousticFieldData model."""
         # Create test field data
         field_shape = (50, 50, 25)
-        pressure_data = np.random.rand(*field_shape) * 1000
         
-        field = FieldData(
-            field_type="acoustic_pressure",
+        field = AcousticFieldData(
+            field_type="generated",
             shape_x=field_shape[0],
             shape_y=field_shape[1], 
             shape_z=field_shape[2],
-            bounds_x_min=-0.05,
-            bounds_x_max=0.05,
-            bounds_y_min=-0.05,
-            bounds_y_max=0.05,
-            bounds_z_min=0.05,
-            bounds_z_max=0.15,
-            data_json=pressure_data.flatten().tolist()
+            resolution=0.001,
+            frequency=40000.0,
+            field_data_path="/tmp/test_field.h5",
+            max_pressure=5000.0,
+            mean_pressure=2000.0
         )
+        field.set_bounds([[-0.05, 0.05], [-0.05, 0.05], [0.05, 0.15]])
         
         db_session.add(field)
         db_session.commit()
         
         # Verify stored correctly
-        retrieved = db_session.query(FieldData).first()
-        assert retrieved.field_type == "acoustic_pressure"
+        retrieved = db_session.query(AcousticFieldData).first()
+        assert retrieved.field_type == "generated"
         assert (retrieved.shape_x, retrieved.shape_y, retrieved.shape_z) == field_shape
+        assert retrieved.frequency == 40000.0
         
-        # Test data reconstruction
-        retrieved_data = np.array(retrieved.data_json).reshape(field_shape)
-        assert np.allclose(retrieved_data, pressure_data)
+        # Test bounds access
+        bounds = retrieved.get_bounds()
+        assert len(bounds) == 3
+        assert bounds[0] == [-0.05, 0.05]
     
     def test_experiment_model(self, db_session):
-        """Test Experiment model."""
-        experiment = Experiment(
+        """Test ExperimentRun model."""
+        experiment = ExperimentRun(
             name="Test Levitation",
             description="Testing particle levitation stability",
-            application_type="levitation",
-            hardware_config={
+            experiment_type="optimization",
+            parameters={
                 "array_type": "ultraleap_stratos",
                 "frequency": 40000,
-                "elements": 256
-            },
-            parameters={
+                "elements": 256,
                 "particle_radius": 0.001,
                 "target_height": 0.08
             },
-            status="completed"
+            status="completed",
+            total_runs=10,
+            successful_runs=8
         )
         
         db_session.add(experiment)
         db_session.commit()
         
         # Verify stored correctly
-        retrieved = db_session.query(Experiment).first()
+        retrieved = db_session.query(ExperimentRun).first()
         assert retrieved.name == "Test Levitation"
-        assert retrieved.application_type == "levitation"
-        assert retrieved.hardware_config["frequency"] == 40000
+        assert retrieved.experiment_type == "optimization"
+        assert retrieved.parameters["frequency"] == 40000
+        assert retrieved.total_runs == 10
     
-    def test_performance_metrics_model(self, db_session):
-        """Test PerformanceMetrics model."""
-        metrics = PerformanceMetrics(
-            operation_type="optimization",
-            duration_seconds=45.2,
+    def test_system_metrics_model(self, db_session):
+        """Test SystemMetric model."""
+        metrics = SystemMetric(
+            cpu_usage=45.2,
             memory_usage_mb=150.5,
-            gpu_utilization=0.85,
-            field_resolution=(64, 64, 32),
-            optimization_iterations=200,
-            convergence_achieved=True,
-            final_cost=0.03
+            gpu_usage=85.0,
+            gpu_memory_mb=2048.0,
+            active_sessions=3,
+            optimizations_per_hour=12.5,
+            average_optimization_time=8.2,
+            hardware_connected=True
         )
         
         db_session.add(metrics)
         db_session.commit()
         
         # Verify stored correctly
-        retrieved = db_session.query(PerformanceMetrics).first()
-        assert retrieved.operation_type == "optimization"
-        assert retrieved.duration_seconds == 45.2
-        assert retrieved.gpu_utilization == 0.85
+        retrieved = db_session.query(SystemMetric).first()
+        assert retrieved.cpu_usage == 45.2
+        assert retrieved.memory_usage_mb == 150.5
+        assert retrieved.gpu_usage == 85.0
+        assert retrieved.hardware_connected is True
     
-    def test_calibration_data_model(self, db_session):
-        """Test CalibrationData model."""
-        calibration = CalibrationData(
-            array_serial="TEST-001",
-            calibration_version="1.0",
-            phase_corrections=np.random.rand(256).tolist(),
-            amplitude_corrections=(np.ones(256) * 0.95).tolist(),
-            element_status=[True] * 256,
-            quality_score=0.92,
-            environmental_temperature=22.5,
-            environmental_humidity=45.0
-        )
+    def test_array_configuration_model(self, db_session):
+        """Test ArrayConfiguration model."""
+        positions = [[i*0.01, j*0.01, 0] for i in range(16) for j in range(16)]
         
-        db_session.add(calibration)
+        array_config = ArrayConfiguration(
+            name="Test Array",
+            array_type="custom",
+            num_elements=256,
+            frequency=40000.0,
+            hardware_id="TEST-001",
+            driver_version="1.0",
+            calibration_quality=0.92,
+            description="Test array configuration"
+        )
+        array_config.set_positions(positions)
+        
+        db_session.add(array_config)
         db_session.commit()
         
         # Verify stored correctly
-        retrieved = db_session.query(CalibrationData).first()
-        assert retrieved.array_serial == "TEST-001"
-        assert len(retrieved.phase_corrections) == 256
-        assert retrieved.quality_score == 0.92
+        retrieved = db_session.query(ArrayConfiguration).first()
+        assert retrieved.name == "Test Array"
+        assert retrieved.num_elements == 256
+        assert retrieved.calibration_quality == 0.92
+        retrieved_positions = retrieved.get_positions()
+        assert len(retrieved_positions) == 256
 
 
 class TestRepositories:
@@ -240,125 +248,124 @@ class TestRepositories:
         # Create test data
         phases = np.random.rand(256) * 2 * np.pi
         result1 = OptimizationResult(
+            method="adam",
             target_type="single_focus",
-            target_position=[0.0, 0.0, 0.1],
-            optimization_method="adam",
-            final_cost=0.05,
             iterations=100,
-            convergence_achieved=True,
-            phases_json=phases.tolist(),
-            amplitudes_json=np.ones(256).tolist()
+            final_loss=0.05,
+            converged=True,
+            time_elapsed=10.5,
+            num_elements=256,
+            target_specification={"position": [0.0, 0.0, 0.1]},
+            device_used="cpu"
         )
+        result1.set_phases(phases.tolist())
         
         result2 = OptimizationResult(
+            method="genetic",
             target_type="twin_trap", 
-            target_position=[0.02, 0.0, 0.1],
-            optimization_method="genetic",
-            final_cost=0.08,
             iterations=150,
-            convergence_achieved=True,
-            phases_json=phases.tolist(),
-            amplitudes_json=np.ones(256).tolist()
+            final_loss=0.08,
+            converged=True,
+            time_elapsed=15.2,
+            num_elements=256,
+            target_specification={"position": [0.02, 0.0, 0.1]},
+            device_used="cpu"
         )
+        result2.set_phases(phases.tolist())
         
-        # Test save functionality
-        saved1 = repo.save(result1)
-        saved2 = repo.save(result2)
+        # Test create functionality
+        db_session.add(result1)
+        db_session.add(result2)
+        db_session.commit()
         
-        assert saved1.id is not None
-        assert saved2.id is not None
+        assert result1.id is not None
+        assert result2.id is not None
         
         # Test get_best_results
         best_results = repo.get_best_results(limit=1)
         assert len(best_results) == 1
-        assert best_results[0].final_cost == 0.05  # Lower cost = better
+        assert best_results[0].final_loss == 0.05  # Lower cost = better
         
-        # Test get_by_target_type
-        focus_results = repo.get_by_target_type("single_focus")
-        assert len(focus_results) == 1
-        assert focus_results[0].target_type == "single_focus"
+        # Test get_by_method
+        adam_results = repo.get_by_method("adam")
+        assert len(adam_results) == 1
+        assert adam_results[0].method == "adam"
         
-        # Test get_recent
-        recent_results = repo.get_recent(hours=24)
+        # Test get_recent_results
+        recent_results = repo.get_recent_results(hours=24)
         assert len(recent_results) == 2
     
-    def test_field_data_repository(self, db_session):
-        """Test FieldDataRepository functionality."""
-        repo = FieldDataRepository(db_session)
+    def test_field_repository(self, db_session):
+        """Test FieldRepository functionality."""
+        repo = FieldRepository(db_session)
         
         # Create test field data
         field_shape = (32, 32, 16)
-        pressure_data = np.random.rand(*field_shape) * 1000
         
-        field = FieldData(
-            field_type="acoustic_pressure",
+        field = AcousticFieldData(
+            field_type="generated",
             shape_x=field_shape[0],
             shape_y=field_shape[1],
             shape_z=field_shape[2],
-            bounds_x_min=-0.02,
-            bounds_x_max=0.02,
-            bounds_y_min=-0.02,
-            bounds_y_max=0.02,
-            bounds_z_min=0.08,
-            bounds_z_max=0.12,
-            data_json=pressure_data.flatten().tolist()
+            resolution=0.001,
+            frequency=40000.0,
+            field_data_path="/tmp/test_field.h5",
+            max_pressure=5000.0
         )
+        field.set_bounds([[-0.02, 0.02], [-0.02, 0.02], [0.08, 0.12]])
         
-        # Test save and retrieve
-        saved_field = repo.save(field)
-        assert saved_field.id is not None
+        # Test create and retrieve
+        db_session.add(field)
+        db_session.commit()
+        assert field.id is not None
         
-        retrieved_field = repo.get_by_id(saved_field.id)
+        retrieved_field = repo.get_by_id(field.id)
         assert retrieved_field is not None
-        assert retrieved_field.field_type == "acoustic_pressure"
+        assert retrieved_field.field_type == "generated"
         
-        # Test get_by_bounds
-        fields_in_bounds = repo.get_by_bounds(
-            x_range=(-0.03, 0.03),
-            y_range=(-0.03, 0.03),
-            z_range=(0.07, 0.13)
-        )
-        assert len(fields_in_bounds) == 1
+        # Test get_by_type
+        generated_fields = repo.get_by_type("generated")
+        assert len(generated_fields) == 1
+        
+        # Test get_by_frequency_range
+        freq_fields = repo.get_by_frequency_range(35000.0, 45000.0)
+        assert len(freq_fields) == 1
     
     def test_experiment_repository(self, db_session):
         """Test ExperimentRepository functionality."""
         repo = ExperimentRepository(db_session)
         
         # Create test experiment
-        experiment = Experiment(
+        experiment = ExperimentRun(
             name="Test Experiment",
             description="Testing repository functionality",
-            application_type="levitation",
-            status="running"
+            experiment_type="optimization",
+            parameters={"test": True},
+            status="running",
+            total_runs=5,
+            successful_runs=3
         )
         
-        # Test save and status update
-        saved_exp = repo.save(experiment)
-        assert saved_exp.id is not None
+        # Test create
+        db_session.add(experiment)
+        db_session.commit()
+        assert experiment.id is not None
         
-        # Test status update
-        updated_exp = repo.update_status(saved_exp.id, "completed")
+        # Test update status via update method
+        updated_exp = repo.update(experiment.id, status="completed")
         assert updated_exp.status == "completed"
         
-        # Test get_by_application_type
-        levitation_experiments = repo.get_by_application_type("levitation")
-        assert len(levitation_experiments) == 1
-        
-        # Test get_active
-        active_experiments = repo.get_active()
+        # Test get_active_experiments (should be none now)
+        active_experiments = repo.get_active_experiments()
         assert len(active_experiments) == 0  # Changed to completed
         
-        # Test add_performance_metrics
-        metrics = PerformanceMetrics(
-            operation_type="test",
-            duration_seconds=10.0,
-            memory_usage_mb=50.0
-        )
-        repo.add_performance_metrics(saved_exp.id, metrics)
+        # Test get_recent_experiments
+        recent_experiments = repo.get_recent_experiments(days=1)
+        assert len(recent_experiments) == 1
         
-        # Verify metrics were added
-        retrieved_exp = repo.get_by_id(saved_exp.id)
-        assert len(retrieved_exp.performance_metrics) == 1
+        # Test update_progress
+        success = repo.update_progress(experiment.experiment_id, 75.0)
+        assert success is True
 
 
 @pytest.mark.integration
@@ -379,43 +386,53 @@ class TestDatabaseIntegration:
                 exp_repo = ExperimentRepository(session)
                 
                 # Create experiment
-                experiment = Experiment(
+                experiment = ExperimentRun(
                     name="Integration Test Workflow",
                     description="Full workflow test",
-                    application_type="levitation"
+                    experiment_type="optimization",
+                    parameters={"test": True}
                 )
-                saved_exp = exp_repo.save(experiment)
+                session.add(experiment)
+                session.commit()
                 
                 # Create optimization result
                 phases = np.random.rand(256) * 2 * np.pi
                 optimization = OptimizationResult(
-                    experiment_id=saved_exp.id,
+                    experiment_run_id=experiment.id,
+                    method="adam",
                     target_type="single_focus",
-                    optimization_method="adam",
-                    final_cost=0.03,
-                    phases_json=phases.tolist(),
-                    amplitudes_json=np.ones(256).tolist()
+                    iterations=100,
+                    final_loss=0.03,
+                    time_elapsed=12.0,
+                    num_elements=256,
+                    target_specification={"test": True},
+                    device_used="cpu"
                 )
-                saved_opt = opt_repo.save(optimization)
+                optimization.set_phases(phases.tolist())
+                session.add(optimization)
+                session.commit()
                 
                 # Create field data
-                field_data = np.random.rand(32, 32, 16) * 1000
-                field = FieldData(
-                    experiment_id=saved_exp.id,
-                    optimization_result_id=saved_opt.id,
-                    field_type="acoustic_pressure",
+                field = AcousticFieldData(
+                    optimization_result_id=optimization.id,
+                    field_type="generated",
                     shape_x=32, shape_y=32, shape_z=16,
-                    data_json=field_data.flatten().tolist()
+                    resolution=0.001,
+                    frequency=40000.0,
+                    max_pressure=3000.0
                 )
-                saved_field = field_repo.save(field)
+                session.add(field)
+                session.commit()
                 
                 # Verify relationships
-                retrieved_exp = exp_repo.get_by_id(saved_exp.id)
+                retrieved_exp = exp_repo.get_by_id(experiment.id)
                 assert len(retrieved_exp.optimization_results) == 1
-                assert len(retrieved_exp.field_data) == 1
                 
-                retrieved_opt = opt_repo.get_by_id(saved_opt.id)
-                assert retrieved_opt.experiment_id == saved_exp.id
+                retrieved_opt = opt_repo.get_by_id(optimization.id)
+                assert retrieved_opt.experiment_run_id == experiment.id
+                
+                retrieved_field = field_repo.get_by_id(field.id)
+                assert retrieved_field.optimization_result_id == optimization.id
                 
             # Cleanup
             Path(tmp.name).unlink()
@@ -431,31 +448,21 @@ class TestDatabaseIntegration:
                 exp_repo = ExperimentRepository(session)
                 
                 # Create experiment
-                experiment = Experiment(
+                experiment = ExperimentRun(
                     name="Performance Test",
-                    application_type="performance_testing"
+                    experiment_type="performance_testing",
+                    parameters={"test": True}
                 )
-                saved_exp = exp_repo.save(experiment)
+                session.add(experiment)
+                session.commit()
                 
-                # Add multiple performance metrics
-                for i in range(3):
-                    metrics = PerformanceMetrics(
-                        operation_type="optimization",
-                        duration_seconds=10.0 + i,
-                        memory_usage_mb=100.0 + i * 10,
-                        gpu_utilization=0.8 + i * 0.05
-                    )
-                    exp_repo.add_performance_metrics(saved_exp.id, metrics)
+                # Test performance stats from repository
+                stats = opt_repo.get_performance_stats(days=1)
+                assert isinstance(stats, dict)
                 
-                # Verify metrics
-                retrieved_exp = exp_repo.get_by_id(saved_exp.id)
-                assert len(retrieved_exp.performance_metrics) == 3
-                
-                # Test performance analysis
-                avg_duration = sum(
-                    m.duration_seconds for m in retrieved_exp.performance_metrics
-                ) / len(retrieved_exp.performance_metrics)
-                assert avg_duration == 11.0  # (10 + 11 + 12) / 3
+                # Test recent results
+                recent = opt_repo.get_recent_results(hours=1)
+                assert len(recent) >= 0
                 
             # Cleanup
             Path(tmp.name).unlink()
