@@ -1,0 +1,347 @@
+{
+  "summary": {
+    "total_files_scanned": 33,
+    "total_issues_found": 18,
+    "high_severity_issues": 15,
+    "medium_severity_issues": 3,
+    "low_severity_issues": 0,
+    "issues_by_category": {
+      "command_injection": 6,
+      "unsafe_deserialization": 8,
+      "weak_crypto": 3,
+      "hardcoded_secrets": 1
+    },
+    "scan_timestamp": "/root/repo"
+  },
+  "high_severity_findings": [
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 218,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 239,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 495,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 610,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 218,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 239,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 495,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 610,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 477,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 518,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 477,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 518,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/security/access_control.py",
+      "line": 229,
+      "category": "hardcoded_secrets",
+      "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+      "content": "admin_password = \"admin123\"  # In production, this should be randomly generated",
+      "severity": "HIGH",
+      "description": "Hardcoded credentials or secrets found"
+    },
+    {
+      "file": "src/distributed/cluster_manager.py",
+      "line": 359,
+      "category": "unsafe_deserialization",
+      "pattern": "pickle\\.loads\\s*\\(",
+      "content": "return pickle.loads(job.result)",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/distributed/cluster_manager.py",
+      "line": 964,
+      "category": "unsafe_deserialization",
+      "pattern": "pickle\\.loads\\s*\\(",
+      "content": "return pickle.loads(bytes.fromhex(job_dict['result']))",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    }
+  ],
+  "medium_severity_findings": [
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 243,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < self.crossover_rate:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 244,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "mask = np.random.random(self.num_elements) < 0.5",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 254,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "mask = np.random.random(self.num_elements) < self.mutation_rate",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    }
+  ],
+  "low_severity_findings": [],
+  "all_findings": [
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 218,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 239,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 495,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 610,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 218,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 239,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 495,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 610,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 477,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 518,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 477,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 518,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 243,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < self.crossover_rate:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 244,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "mask = np.random.random(self.num_elements) < 0.5",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 254,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "mask = np.random.random(self.num_elements) < self.mutation_rate",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/security/access_control.py",
+      "line": 229,
+      "category": "hardcoded_secrets",
+      "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+      "content": "admin_password = \"admin123\"  # In production, this should be randomly generated",
+      "severity": "HIGH",
+      "description": "Hardcoded credentials or secrets found"
+    },
+    {
+      "file": "src/distributed/cluster_manager.py",
+      "line": 359,
+      "category": "unsafe_deserialization",
+      "pattern": "pickle\\.loads\\s*\\(",
+      "content": "return pickle.loads(job.result)",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/distributed/cluster_manager.py",
+      "line": 964,
+      "category": "unsafe_deserialization",
+      "pattern": "pickle\\.loads\\s*\\(",
+      "content": "return pickle.loads(bytes.fromhex(job_dict['result']))",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    }
+  ]
+}

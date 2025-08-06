@@ -1,0 +1,205 @@
+# Multi-stage production Dockerfile for Acousto-Gen
+
+# Base stage - common dependencies
+FROM python:3.11-slim as base
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    cmake \
+    git \
+    curl \
+    wget \
+    libssl-dev \
+    libffi-dev \
+    libhdf5-dev \
+    libopenblas-dev \
+    liblapack-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Create non-root user for security
+RUN groupadd -r acousto && useradd -r -g acousto acousto
+
+# Copy requirements first for better caching
+COPY requirements.txt requirements-dev.txt ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Development stage
+FROM base as development
+
+# Install development dependencies
+RUN pip install --no-cache-dir -r requirements-dev.txt
+
+# Install additional development tools
+RUN pip install --no-cache-dir \
+    jupyter \
+    ipython \
+    matplotlib \
+    seaborn \
+    plotly \
+    dash
+
+# Copy source code
+COPY . .
+
+# Install package in development mode
+RUN pip install -e .
+
+# Set permissions
+RUN chown -R acousto:acousto /app
+
+USER acousto
+
+EXPOSE 8000
+CMD ["python", "src/main.py", "--host", "0.0.0.0", "--port", "8000", "--debug"]
+
+# Production stage
+FROM base as production
+
+# Install production-only dependencies
+RUN pip install --no-cache-dir \
+    gunicorn \
+    uvicorn[standard] \
+    gevent \
+    eventlet
+
+# Copy only necessary files
+COPY src/ ./src/
+COPY acousto_gen/ ./acousto_gen/
+COPY setup.py README.md LICENSE ./
+COPY config/ ./config/
+COPY monitoring/ ./monitoring/
+
+# Install package
+RUN pip install --no-cache-dir .
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/logs /app/ssl && \
+    chown -R acousto:acousto /app
+
+# Copy production configuration
+COPY config/production/ ./config/
+
+# Health check script
+COPY scripts/healthcheck.py ./scripts/
+
+# Set permissions
+RUN chown -R acousto:acousto /app && \
+    chmod +x scripts/healthcheck.py
+
+USER acousto
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python scripts/healthcheck.py
+
+EXPOSE 8000
+
+# Production command with Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", \
+     "--workers", "4", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--max-requests", "1000", \
+     "--max-requests-jitter", "100", \
+     "--preload", \
+     "--access-logfile", "/app/logs/access.log", \
+     "--error-logfile", "/app/logs/error.log", \
+     "--log-level", "info", \
+     "src.main:app"]
+
+# GPU-enabled production stage
+FROM nvidia/cuda:11.8-runtime-ubuntu20.04 as production-gpu
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    python3.11 \
+    python3.11-dev \
+    python3-pip \
+    gcc \
+    g++ \
+    cmake \
+    git \
+    curl \
+    wget \
+    libssl-dev \
+    libffi-dev \
+    libhdf5-dev \
+    libcudnn8 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set Python 3.11 as default
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+
+WORKDIR /app
+
+# Create user
+RUN groupadd -r acousto && useradd -r -g acousto acousto
+
+# Copy requirements
+COPY requirements.txt ./
+
+# Install CUDA-enabled packages
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 && \
+    pip install --no-cache-dir cupy-cuda11x && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir gunicorn uvicorn[standard]
+
+# Copy source code
+COPY src/ ./src/
+COPY acousto_gen/ ./acousto_gen/
+COPY setup.py README.md ./
+COPY config/ ./config/
+
+# Install package
+RUN pip install --no-cache-dir .
+
+# Create directories and set permissions
+RUN mkdir -p /app/data /app/logs && \
+    chown -R acousto:acousto /app
+
+USER acousto
+
+EXPOSE 8001
+
+CMD ["python", "src/gpu_worker.py", "--port", "8001"]
+
+# Worker stage for distributed computing
+FROM production as worker
+
+# Install additional worker dependencies
+RUN pip install --no-cache-dir \
+    celery \
+    dask[distributed] \
+    ray
+
+# Worker-specific configuration
+COPY config/worker/ ./config/
+
+CMD ["python", "src/worker.py"]
+
+# Security scanning stage
+FROM python:3.11-slim as security
+
+WORKDIR /app
+
+# Install security tools
+RUN pip install --no-cache-dir \
+    bandit \
+    safety \
+    semgrep
+
+# Copy scanning scripts
+COPY scripts/security_scan.py ./
+COPY security_scan.py ./
+
+CMD ["python", "security_scan.py"]
