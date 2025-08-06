@@ -11,7 +11,8 @@ class TestAcousticHologram:
     
     def test_initialization(self) -> None:
         """Test hologram initialization."""
-        mock_transducer = "mock_transducer"
+        from src.physics.transducers.transducer_array import UltraLeap256
+        mock_transducer = UltraLeap256()
         hologram = AcousticHologram(
             transducer=mock_transducer,
             frequency=40000,
@@ -20,12 +21,14 @@ class TestAcousticHologram:
         
         assert hologram.transducer == mock_transducer
         assert hologram.frequency == 40000
-        assert hologram.medium == "air"
+        assert hasattr(hologram.medium, 'speed_of_sound')
     
     def test_create_focus_point(self) -> None:
         """Test focus point creation."""
+        from src.physics.transducers.transducer_array import UltraLeap256
+        mock_transducer = UltraLeap256()
         hologram = AcousticHologram(
-            transducer="mock", 
+            transducer=mock_transducer, 
             frequency=40000
         )
         
@@ -34,19 +37,32 @@ class TestAcousticHologram:
             pressure=4000
         )
         
-        assert isinstance(target_field, np.ndarray)
-        assert target_field.shape == (100, 100, 100)
+        # The method now returns an AcousticField object
+        assert hasattr(target_field, 'data')
+        assert hasattr(target_field, 'bounds')
+        assert target_field.data.shape == (200, 200, 200)
     
     def test_optimize(self) -> None:
         """Test phase optimization."""
+        from src.physics.transducers.transducer_array import UltraLeap256
+        mock_transducer = UltraLeap256()
         hologram = AcousticHologram(
-            transducer="mock",
+            transducer=mock_transducer,
             frequency=40000
         )
         
-        target = np.zeros((100, 100, 100))
-        phases = hologram.optimize(target, iterations=100)
+        # Create a proper target field
+        target_field = hologram.create_focus_point(
+            position=(0, 0, 0.1),
+            pressure=4000
+        )
         
+        result = hologram.optimize(target_field, iterations=10)
+        
+        assert isinstance(result, dict)
+        assert 'phases' in result
+        assert 'final_loss' in result
+        phases = result['phases']
         assert isinstance(phases, np.ndarray)
         assert len(phases) == 256
         assert np.all(phases >= 0)
