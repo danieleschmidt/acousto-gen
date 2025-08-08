@@ -1,0 +1,20 @@
+{
+  "apiVersion": "v2",
+  "name": "acousto-gen",
+  "description": "Acousto-Gen Acoustic Holography Platform",
+  "type": "application",
+  "version": "0.1.0",
+  "appVersion": "0.1.0",
+  "keywords": [
+    "acoustics",
+    "holography",
+    "physics",
+    "simulation"
+  ],
+  "maintainers": [
+    {
+      "name": "Terragon Labs",
+      "email": "info@terragonlabs.com"
+    }
+  ]
+}

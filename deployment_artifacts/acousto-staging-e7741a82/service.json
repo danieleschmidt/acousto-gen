@@ -1,0 +1,31 @@
+{
+  "apiVersion": "v1",
+  "kind": "Service",
+  "metadata": {
+    "name": "acousto-gen-api-service",
+    "namespace": "acousto-gen",
+    "labels": {
+      "app": "acousto-gen-api"
+    }
+  },
+  "spec": {
+    "selector": {
+      "app": "acousto-gen-api"
+    },
+    "ports": [
+      {
+        "name": "http",
+        "port": 80,
+        "targetPort": 8000,
+        "protocol": "TCP"
+      },
+      {
+        "name": "metrics",
+        "port": 9090,
+        "targetPort": 9090,
+        "protocol": "TCP"
+      }
+    ],
+    "type": "ClusterIP"
+  }
+}

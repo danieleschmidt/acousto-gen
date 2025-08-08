@@ -1,0 +1,57 @@
+{
+  "replicaCount": 1,
+  "image": {
+    "repository": "acousto-gen",
+    "tag": "0.1.0",
+    "pullPolicy": "IfNotPresent"
+  },
+  "service": {
+    "type": "ClusterIP",
+    "port": 80
+  },
+  "ingress": {
+    "enabled": true,
+    "className": "nginx",
+    "annotations": {
+      "cert-manager.io/cluster-issuer": "letsencrypt-prod"
+    },
+    "hosts": [
+      {
+        "host": "api.acousto.terragonlabs.com",
+        "paths": [
+          {
+            "path": "/",
+            "pathType": "Prefix"
+          }
+        ]
+      }
+    ],
+    "tls": [
+      {
+        "secretName": "acousto-gen-tls",
+        "hosts": [
+          "api.acousto.terragonlabs.com"
+        ]
+      }
+    ]
+  },
+  "resources": {
+    "requests": {
+      "memory": "1Gi",
+      "cpu": "500m"
+    },
+    "limits": {
+      "memory": "4Gi",
+      "cpu": "2000m"
+    }
+  },
+  "autoscaling": {
+    "enabled": true,
+    "minReplicas": 1,
+    "maxReplicas": 3,
+    "targetCPUUtilizationPercentage": 80
+  },
+  "monitoring": {
+    "enabled": true
+  }
+}

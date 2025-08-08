@@ -1,0 +1,27 @@
+{
+  "deployment_id": "acousto-staging-e7741a82",
+  "version": "0.1.0",
+  "environment": "staging",
+  "timestamp": 1754684724.8498387,
+  "configuration": {
+    "environment": "staging",
+    "version": "0.1.0",
+    "replicas": 1,
+    "max_memory": "4Gi",
+    "max_cpu": "2000m",
+    "min_memory": "1Gi",
+    "min_cpu": "500m",
+    "enable_ssl": true,
+    "enable_monitoring": true,
+    "enable_logging": true,
+    "enable_backup": true,
+    "database_url": null,
+    "redis_url": null,
+    "secret_key": null,
+    "cors_origins": null
+  },
+  "endpoints": [
+    "http://acousto-staging.local",
+    "http://acousto-staging.local/docs"
+  ]
+}
