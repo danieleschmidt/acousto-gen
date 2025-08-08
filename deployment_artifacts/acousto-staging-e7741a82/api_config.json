@@ -1,0 +1,23 @@
+{
+  "environment": "staging",
+  "debug": false,
+  "host": "0.0.0.0",
+  "port": 8000,
+  "workers": 1,
+  "max_requests": 1000,
+  "max_requests_jitter": 100,
+  "timeout": 30,
+  "ssl_enabled": true,
+  "cors_origins": [
+    "https://acousto.terragonlabs.com"
+  ],
+  "database_url": "${ACOUSTO_DATABASE_URL}",
+  "redis_url": "${ACOUSTO_REDIS_URL}",
+  "secret_key": "${ACOUSTO_SECRET_KEY}",
+  "log_level": "info",
+  "monitoring": {
+    "enabled": true,
+    "metrics_port": 9090,
+    "health_check_interval": 30
+  }
+}

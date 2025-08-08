@@ -1,12 +1,31 @@
 """Core acoustic holography functionality."""
 
 from typing import Optional, Tuple, Union, List, Dict, Any
-import numpy as np
-import torch
-import torch.nn as nn
-import torch.optim as optim
 from pathlib import Path
 import sys
+
+# Robust dependency handling with graceful degradation
+try:
+    from .mock_backend import check_and_setup
+    MOCK_MODE = not check_and_setup()
+except ImportError:
+    MOCK_MODE = False
+
+# Import with fallback to mocks
+try:
+    import numpy as np
+    import torch
+    import torch.nn as nn
+    import torch.optim as optim
+except ImportError:
+    if not MOCK_MODE:
+        print("⚠️  Dependencies not found, enabling mock mode...")
+        from .mock_backend import setup_mock_dependencies
+        setup_mock_dependencies()
+        import numpy as np
+        import torch
+        import torch.nn as nn
+        import torch.optim as optim
 
 # Add src directory to path for imports
 src_path = Path(__file__).parent.parent / "src"

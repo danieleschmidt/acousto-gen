@@ -226,7 +226,17 @@ class AccessControl:
     
     def _create_default_admin(self) -> None:
         """Create default admin user."""
-        admin_password = "admin123"  # In production, this should be randomly generated
+        # Use environment variable or generate secure password
+        admin_password = os.environ.get("ACOUSTO_ADMIN_PASSWORD")
+        if not admin_password:
+            # Generate secure random password for development
+            import secrets
+            import string
+            alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+            admin_password = ''.join(secrets.choice(alphabet) for _ in range(16))
+            print(f"⚠️  Generated admin password: {admin_password}")
+            print("   Set ACOUSTO_ADMIN_PASSWORD environment variable for production")
+        
         self.create_user(
             username="admin",
             password=admin_password,

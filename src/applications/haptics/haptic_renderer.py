@@ -5,6 +5,7 @@ Provides tactile sensations at arbitrary points in space without contact.
 
 import numpy as np
 import time
+import torch
 from typing import Dict, List, Any, Optional, Tuple, Callable
 from dataclasses import dataclass
 import threading

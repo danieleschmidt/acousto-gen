@@ -1,0 +1,45 @@
+{
+  "apiVersion": "networking.k8s.io/v1",
+  "kind": "Ingress",
+  "metadata": {
+    "name": "acousto-gen-ingress",
+    "namespace": "acousto-gen",
+    "annotations": {
+      "kubernetes.io/ingress.class": "nginx",
+      "cert-manager.io/cluster-issuer": "letsencrypt-prod",
+      "nginx.ingress.kubernetes.io/ssl-redirect": "true",
+      "nginx.ingress.kubernetes.io/rate-limit": "100"
+    }
+  },
+  "spec": {
+    "tls": [
+      {
+        "hosts": [
+          "api.acousto.terragonlabs.com"
+        ],
+        "secretName": "acousto-gen-tls"
+      }
+    ],
+    "rules": [
+      {
+        "host": "api.acousto.terragonlabs.com",
+        "http": {
+          "paths": [
+            {
+              "path": "/",
+              "pathType": "Prefix",
+              "backend": {
+                "service": {
+                  "name": "acousto-gen-api-service",
+                  "port": {
+                    "number": 80
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

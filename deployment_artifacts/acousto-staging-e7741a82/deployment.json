@@ -1,0 +1,98 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "acousto-gen-api",
+    "namespace": "acousto-gen",
+    "labels": {
+      "app": "acousto-gen-api",
+      "version": "0.1.0",
+      "environment": "staging"
+    }
+  },
+  "spec": {
+    "replicas": 1,
+    "selector": {
+      "matchLabels": {
+        "app": "acousto-gen-api"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "acousto-gen-api",
+          "version": "0.1.0"
+        }
+      },
+      "spec": {
+        "securityContext": {
+          "runAsNonRoot": true,
+          "runAsUser": 1000,
+          "fsGroup": 1000
+        },
+        "containers": [
+          {
+            "name": "acousto-gen-api",
+            "image": "acousto-gen:0.1.0",
+            "ports": [
+              {
+                "containerPort": 8000,
+                "name": "http"
+              },
+              {
+                "containerPort": 9090,
+                "name": "metrics"
+              }
+            ],
+            "env": [
+              {
+                "name": "ACOUSTO_SECRET_KEY",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "name": "acousto-gen-secrets",
+                    "key": "secret-key"
+                  }
+                }
+              },
+              {
+                "name": "ACOUSTO_DATABASE_URL",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "name": "acousto-gen-secrets",
+                    "key": "database-url"
+                  }
+                }
+              }
+            ],
+            "resources": {
+              "requests": {
+                "memory": "1Gi",
+                "cpu": "500m"
+              },
+              "limits": {
+                "memory": "4Gi",
+                "cpu": "2000m"
+              }
+            },
+            "livenessProbe": {
+              "httpGet": {
+                "path": "/health",
+                "port": 8000
+              },
+              "initialDelaySeconds": 30,
+              "periodSeconds": 10
+            },
+            "readinessProbe": {
+              "httpGet": {
+                "path": "/ready",
+                "port": 8000
+              },
+              "initialDelaySeconds": 5,
+              "periodSeconds": 5
+            }
+          }
+        ]
+      }
+    }
+  }
+}
