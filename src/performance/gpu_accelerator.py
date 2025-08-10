@@ -3,18 +3,54 @@ GPU acceleration framework for acoustic holography computations.
 Supports multi-GPU processing, memory optimization, and distributed computing.
 """
 
+# Robust dependency handling with graceful degradation  
 import numpy as np
-import torch
-import torch.distributed as dist
-import torch.multiprocessing as mp
-from torch.nn.parallel import DistributedDataParallel as DDP
+try:
+    import torch
+    import torch.distributed as dist
+    import torch.multiprocessing as mp
+    from torch.nn.parallel import DistributedDataParallel as DDP
+except ImportError:
+    # Will be handled by mock system below
+    pass
 from typing import Dict, List, Optional, Any, Tuple, Union, Callable
 from dataclasses import dataclass
+
+# Add path for acousto_gen types
+import sys
+from pathlib import Path
+acousto_gen_path = Path(__file__).parent.parent.parent / "acousto_gen"
+sys.path.insert(0, str(acousto_gen_path))
+
+try:
+    from type_compat import Tensor
+except ImportError:
+    # Fallback to Any if types module not available
+    Tensor = Any
+
+# Set up mock backend if needed
+try:
+    # Check if torch is properly imported
+    torch.cuda.is_available
+except (NameError, AttributeError):
+    # Need to set up mock backend
+    try:
+        from mock_backend import setup_mock_dependencies
+        setup_mock_dependencies()
+        import torch
+        import torch.distributed as dist
+        import torch.multiprocessing as mp
+        from torch.nn.parallel import DistributedDataParallel as DDP
+    except ImportError:
+        pass
 import time
 import threading
 import queue
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import psutil
+try:
+    import psutil
+except ImportError:
+    psutil = None
 import gc
 import warnings
 
@@ -103,7 +139,7 @@ class GPUMemoryManager:
         size: Tuple[int, ...],
         dtype: torch.dtype,
         device_id: int
-    ) -> torch.Tensor:
+    ) -> Tensor:
         """
         Allocate tensor with optimized memory management.
         
@@ -163,7 +199,7 @@ class GPUMemoryManager:
                 'max_cached': torch.cuda.max_memory_reserved(device_id),
             }
     
-    def optimize_memory_layout(self, tensors: List[torch.Tensor]) -> List[torch.Tensor]:
+    def optimize_memory_layout(self, tensors: List[Tensor]) -> List[Tensor]:
         """Optimize memory layout of tensors for better performance."""
         optimized_tensors = []
         
@@ -296,7 +332,7 @@ class MultiGPUAccelerator:
         target_points: np.ndarray,
         frequency: float,
         medium_properties: Dict[str, float]
-    ) -> torch.Tensor:
+    ) -> Tensor:
         """
         GPU-accelerated wave propagation computation.
         
@@ -369,7 +405,7 @@ class MultiGPUAccelerator:
         frequency: float,
         medium_properties: Dict[str, float],
         device_id: int
-    ) -> torch.Tensor:
+    ) -> Tensor:
         """Compute wave propagation for a chunk of target points."""
         device = torch.device(f'cuda:{device_id}')
         
@@ -407,11 +443,11 @@ class MultiGPUAccelerator:
     def accelerate_field_optimization(
         self,
         forward_model: Callable,
-        target_field: torch.Tensor,
-        initial_phases: torch.Tensor,
+        target_field: Tensor,
+        initial_phases: Tensor,
         iterations: int = 1000,
         learning_rate: float = 0.01
-    ) -> Tuple[torch.Tensor, List[float]]:
+    ) -> Tuple[Tensor, List[float]]:
         """
         GPU-accelerated field optimization with distributed training.
         

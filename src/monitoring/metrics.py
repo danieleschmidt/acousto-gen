@@ -9,13 +9,138 @@ from typing import Dict, Any, Optional, Callable
 from functools import wraps
 from contextlib import contextmanager
 
-from prometheus_client import Counter, Histogram, Gauge, Summary, generate_latest
-from opentelemetry import trace, metrics
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.exporter.prometheus import PrometheusMetricReader
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+# Handle optional dependencies gracefully
+try:
+    from prometheus_client import Counter, Histogram, Gauge, Summary, generate_latest
+    HAS_PROMETHEUS = True
+except ImportError:
+    print("⚠️ Prometheus client not available - metrics will be mocked")
+    HAS_PROMETHEUS = False
+    
+    # Mock Prometheus metrics
+    class MockMetric:
+        def __init__(self, name, doc, labels=None):
+            self.name = name
+            self.doc = doc
+            self.labels_list = labels or []
+            self.value = 0
+        
+        def inc(self, amount=1):
+            self.value += amount
+            return self
+        
+        def set(self, value):
+            self.value = value
+            return self
+        
+        def observe(self, value):
+            self.value = value
+            return self
+        
+        def labels(self, **kwargs):
+            return self  # Return self for chaining
+        
+        def time(self):
+            return self
+        
+        def __enter__(self):
+            self.start_time = time.time()
+            return self
+        
+        def __exit__(self, *args):
+            self.value = time.time() - self.start_time
+    
+    def Counter(name, doc, labelnames=None, **kwargs):
+        return MockMetric(name, doc, labelnames)
+    
+    def Histogram(name, doc, labelnames=None, buckets=None, **kwargs):
+        return MockMetric(name, doc, labelnames)
+    
+    def Gauge(name, doc, labelnames=None, **kwargs):
+        return MockMetric(name, doc, labelnames)
+    
+    def Summary(name, doc, labelnames=None, **kwargs):
+        return MockMetric(name, doc, labelnames)
+    
+    def generate_latest():
+        return "# Mock metrics\ntest_metric 1.0\n"
+
+try:
+    from opentelemetry import trace, metrics
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.metrics import MeterProvider
+    from opentelemetry.sdk.resources import Resource
+    from opentelemetry.exporter.prometheus import PrometheusMetricReader
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+    HAS_OPENTELEMETRY = True
+except ImportError:
+    print("⚠️ OpenTelemetry not available - tracing will be mocked")
+    HAS_OPENTELEMETRY = False
+    
+    # Mock OpenTelemetry
+    class MockTrace:
+        @staticmethod
+        def get_tracer(name):
+            class MockTracer:
+                @contextmanager
+                def start_as_current_span(self, name):
+                    yield None
+            return MockTracer()
+        
+        @staticmethod
+        def set_tracer_provider(provider):
+            pass
+    
+    class MockResource:
+        @staticmethod
+        def create(attrs):
+            return None
+    
+    class MockTracerProvider:
+        def __init__(self, resource=None):
+            pass
+        
+        def get_tracer(self, name):
+            return MockTrace.get_tracer(name)
+    
+    class MockMeterProvider:
+        def __init__(self, metric_readers=None, resource=None):
+            pass
+        
+        def get_meter(self, name):
+            return None
+    
+    class MockMetrics:
+        @staticmethod
+        def set_meter_provider(provider):
+            pass
+        
+        @staticmethod
+        def get_meter(name):
+            class MockMeter:
+                def create_counter(self, name, description=None, unit=None):
+                    return MockMetric(name, description)
+                
+                def create_histogram(self, name, description=None, unit=None):
+                    return MockMetric(name, description)
+                
+                def create_gauge(self, name, description=None, unit=None):
+                    return MockMetric(name, description)
+                
+                def create_up_down_counter(self, name, description=None, unit=None):
+                    return MockMetric(name, description)
+            
+            return MockMeter()
+    
+    class MockPrometheusMetricReader:
+        pass
+    
+    trace = MockTrace()
+    metrics = MockMetrics()
+    Resource = MockResource()
+    TracerProvider = MockTracerProvider
+    MeterProvider = MockMeterProvider  
+    PrometheusMetricReader = MockPrometheusMetricReader
 
 
 logger = logging.getLogger(__name__)
