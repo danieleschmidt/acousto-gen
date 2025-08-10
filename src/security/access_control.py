@@ -6,8 +6,7 @@ Provides role-based access control, API authentication, and audit logging.
 import hashlib
 import secrets
 import time
-import jwt
-import bcrypt
+import os
 from typing import Dict, List, Optional, Set, Any, Callable
 from dataclasses import dataclass, field
 from enum import Enum
@@ -15,6 +14,54 @@ import json
 from pathlib import Path
 import threading
 import logging
+
+# Handle optional dependencies gracefully
+try:
+    import jwt
+    import bcrypt
+    HAS_CRYPTO_DEPS = True
+except ImportError:
+    print("⚠️ Crypto dependencies (PyJWT, bcrypt) not available - using mock implementations")
+    HAS_CRYPTO_DEPS = False
+    
+    # Mock implementations for demo
+    class MockJWT:
+        @staticmethod
+        def encode(payload, key, algorithm='HS256'):
+            import json
+            import base64
+            token_data = json.dumps(payload)
+            return base64.b64encode(token_data.encode()).decode()
+        
+        @staticmethod  
+        def decode(token, key, algorithms=None):
+            import json
+            import base64
+            try:
+                token_data = base64.b64decode(token.encode()).decode()
+                return json.loads(token_data)
+            except:
+                raise Exception("Invalid token")
+        
+        class InvalidTokenError(Exception):
+            pass
+    
+    class MockBcrypt:
+        @staticmethod
+        def hashpw(password, salt):
+            # Simple hash for demo - NOT secure
+            return hashlib.sha256(password + b'salt').digest()
+        
+        @staticmethod
+        def gensalt():
+            return b'salt'
+        
+        @staticmethod
+        def checkpw(password, hash_val):
+            return MockBcrypt.hashpw(password, b'salt') == hash_val
+    
+    jwt = MockJWT()
+    bcrypt = MockBcrypt()
 
 
 class UserRole(Enum):
@@ -230,7 +277,6 @@ class AccessControl:
         admin_password = os.environ.get("ACOUSTO_ADMIN_PASSWORD")
         if not admin_password:
             # Generate secure random password for development
-            import secrets
             import string
             alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
             admin_password = ''.join(secrets.choice(alphabet) for _ in range(16))

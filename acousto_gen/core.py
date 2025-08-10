@@ -312,7 +312,7 @@ class AcousticHologram:
         
         return self.current_phases
     
-    def _forward_model(self, phases: torch.Tensor, amplitudes: torch.Tensor) -> torch.Tensor:
+    def _forward_model(self, phases, amplitudes):
         """Forward model: compute field from phases and amplitudes."""
         # Convert to numpy for propagator
         phases_np = phases.detach().cpu().numpy()
@@ -331,11 +331,11 @@ class AcousticHologram:
     
     def _compute_loss(
         self,
-        generated: torch.Tensor,
-        target: torch.Tensor,
-        phases: torch.Tensor,
+        generated,
+        target,
+        phases,
         lambda_smooth: float
-    ) -> torch.Tensor:
+    ):
         """Compute optimization loss function."""
         # Field matching loss (MSE on complex field)
         field_loss = torch.mean(torch.abs(generated - target)**2)

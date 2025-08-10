@@ -3,13 +3,46 @@ Hologram optimization algorithms for acoustic field generation.
 Implements gradient-based, genetic, and neural optimization methods.
 """
 
+# Robust dependency handling with graceful degradation
 import numpy as np
-import torch
-import torch.nn as nn
-import torch.optim as optim
+try:
+    import torch
+    import torch.nn as nn
+    import torch.optim as optim
+except ImportError:
+    # Will be handled by mock system below
+    pass
 from typing import Optional, Dict, Any, Callable, Tuple, List
 from dataclasses import dataclass
 import time
+
+# Add path for acousto_gen types
+import sys
+from pathlib import Path
+acousto_gen_path = Path(__file__).parent.parent.parent / "acousto_gen"
+sys.path.insert(0, str(acousto_gen_path))
+
+try:
+    from type_compat import Tensor, Array
+except ImportError:
+    # Fallback to Any if types module not available
+    Tensor = Any
+    Array = Any
+
+# Set up mock backend if needed
+try:
+    # Check if torch is properly imported
+    torch.cuda.is_available
+except (NameError, AttributeError):
+    # Need to set up mock backend
+    try:
+        from mock_backend import setup_mock_dependencies
+        setup_mock_dependencies()
+        import torch
+        import torch.nn as nn
+        import torch.optim as optim
+    except ImportError:
+        pass
 
 
 @dataclass
@@ -73,7 +106,7 @@ class GradientOptimizer:
     def optimize(
         self,
         forward_model: Callable,
-        target_field: torch.Tensor,
+        target_field: Tensor,
         iterations: int = 1000,
         loss_function: Optional[Callable] = None,
         regularization: Optional[Dict[str, float]] = None,
@@ -385,7 +418,7 @@ class NeuralHologramGenerator(nn.Module):
         
         self.network = nn.Sequential(*layers)
     
-    def forward(self, target_field: torch.Tensor) -> torch.Tensor:
+    def forward(self, target_field: Tensor) -> Tensor:
         """
         Generate phase pattern from target field.
         

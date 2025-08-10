@@ -238,14 +238,32 @@ class MockTorch:
     
     @staticmethod
     def zeros(size, dtype=None, device='cpu'):
+        if isinstance(size, (list, tuple)):
+            # Calculate total size from shape
+            total_size = 1
+            for dim in size:
+                total_size *= dim
+            size = total_size
         return MockTensor([0] * size, dtype, device)
     
     @staticmethod
     def ones(size, dtype=None, device='cpu'):
+        if isinstance(size, (list, tuple)):
+            # Calculate total size from shape
+            total_size = 1
+            for dim in size:
+                total_size *= dim
+            size = total_size
         return MockTensor([1] * size, dtype, device)
     
     @staticmethod
     def randn(size, requires_grad=False, device='cpu'):
+        if isinstance(size, (list, tuple)):
+            # Calculate total size from shape
+            total_size = 1
+            for dim in size:
+                total_size *= dim
+            size = total_size
         data = [random.gauss(0, 1) for _ in range(size)]
         tensor = MockTensor(data, device=device)
         tensor.requires_grad = requires_grad
@@ -258,6 +276,20 @@ class MockTorch:
     @staticmethod
     def cuda_is_available():
         return False
+    
+    # CUDA module mock
+    class cuda:
+        @staticmethod
+        def is_available():
+            return False
+        
+        @staticmethod
+        def device_count():
+            return 0
+        
+        @staticmethod
+        def empty_cache():
+            pass
     
     @staticmethod
     def diff(input_tensor, n=1, dim=-1):
@@ -319,6 +351,12 @@ class MockTorch:
     # Dtypes
     float32 = 'float32'
     complex64 = 'complex64'
+    
+    # Add dtype alias for compatibility
+    dtype = float32
+    
+    # Type alias for compatibility
+    Tensor = 'MockTensor'
     
     # Neural network module
     class nn:
@@ -460,8 +498,20 @@ class MockTorch:
     # Utils module
     class utils:
         class data:
-            class TensorDataset:
+            class Dataset:
+                """Base dataset class for mock PyTorch."""
+                def __init__(self):
+                    pass
+                
+                def __len__(self):
+                    return 0
+                
+                def __getitem__(self, idx):
+                    return None
+            
+            class TensorDataset(Dataset):
                 def __init__(self, *datasets):
+                    super().__init__()
                     self.datasets = datasets
                 
                 def __len__(self):
@@ -488,6 +538,15 @@ class MockTensor:
         self.dtype = dtype
         self.device = device
         self.requires_grad = False
+    
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, key):
+        return self.data[key]
+    
+    def __setitem__(self, key, value):
+        self.data[key] = value
     
     def detach(self):
         return self
