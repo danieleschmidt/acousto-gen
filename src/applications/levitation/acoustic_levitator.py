@@ -695,3 +695,341 @@ class AcousticLevitator:
                     points.append([xi, yi, zi])
         
         return np.array(points)
+
+
+class MultiPointLevitation(AcousticLevitator):
+    """
+    Simplified interface for multi-particle levitation control.
+    
+    This class provides a higher-level API that matches the examples in the README,
+    built on top of the comprehensive AcousticLevitator implementation.
+    """
+    
+    def __init__(
+        self,
+        transducer_array,
+        particle_size: float = 3e-3,
+        workspace_bounds: List[Tuple[float, float]] = None
+    ):
+        """
+        Initialize multi-point levitation system.
+        
+        Args:
+            transducer_array: Transducer array object
+            particle_size: Default particle radius in meters
+            workspace_bounds: Safe working volume bounds
+        """
+        # Import required components
+        from physics.propagation.wave_propagator import WavePropagator, MediumProperties
+        from optimization.hologram_optimizer import HologramOptimizer
+        
+        # Create default components if not provided
+        medium = MediumProperties(
+            density=1.2,
+            speed_of_sound=343,
+            absorption=0.01,
+            temperature=20.0
+        )
+        
+        propagator = WavePropagator(
+            resolution=1e-3,
+            bounds=[(-0.1, 0.1), (-0.1, 0.1), (0, 0.2)],
+            frequency=transducer_array.frequency,
+            medium=medium
+        )
+        
+        optimizer = HologramOptimizer()
+        
+        # Initialize parent class
+        super().__init__(
+            transducer_array=transducer_array,
+            wave_propagator=propagator,
+            optimizer=optimizer,
+            workspace_bounds=workspace_bounds
+        )
+        
+        self.default_particle_size = particle_size
+        self.default_particle_density = 25  # kg/m³ for polystyrene beads
+    
+    def create_traps(
+        self,
+        positions: List[List[float]],
+        trap_strength: str = "strong",
+        stability_margin: float = 1.5
+    ) -> np.ndarray:
+        """
+        Create acoustic traps at specified positions.
+        
+        Args:
+            positions: List of 3D positions for traps
+            trap_strength: Trap strength ("weak", "medium", "strong")
+            stability_margin: Safety factor for trap stability
+            
+        Returns:
+            Optimized phase pattern for all traps
+        """
+        # Convert strength to numerical value
+        strength_map = {
+            "weak": 0.5,
+            "medium": 1.0,
+            "strong": 1.5
+        }
+        strength = strength_map.get(trap_strength, 1.0) * stability_margin
+        
+        # Create particles at trap positions for internal tracking
+        self.particles = []
+        for i, pos in enumerate(positions):
+            particle = Particle(
+                position=np.array(pos),
+                velocity=np.zeros(3),
+                radius=self.default_particle_size,
+                density=self.default_particle_density,
+                id=i
+            )
+            self.particles.append(particle)
+        
+        # Generate trap configuration
+        phases = self.create_multi_trap(positions)
+        
+        # Apply strength scaling
+        return phases * strength
+    
+    def create_trajectory(
+        self,
+        pattern: str,
+        center: List[float],
+        size: float,
+        duration: float
+    ) -> List[Dict[str, Any]]:
+        """
+        Create trajectory pattern for particle animation.
+        
+        Args:
+            pattern: Pattern type ("figure_8", "circle", "spiral", "lemniscate")
+            center: Pattern center position
+            size: Pattern size scale
+            duration: Duration in seconds
+            
+        Returns:
+            List of trajectory waypoints
+        """
+        center = np.array(center)
+        num_points = int(duration * self.update_rate)
+        trajectory = []
+        
+        for i in range(num_points):
+            t = i / (num_points - 1)  # Normalized time [0, 1]
+            
+            if pattern == "figure_8":
+                # Lemniscate (figure-8) pattern
+                a = size / 2
+                x = a * np.sin(2 * np.pi * t) / (1 + np.cos(2 * np.pi * t)**2)
+                y = a * np.sin(2 * np.pi * t) * np.cos(2 * np.pi * t) / (1 + np.cos(2 * np.pi * t)**2)
+                z = 0
+                
+            elif pattern == "circle":
+                # Circular pattern
+                x = size/2 * np.cos(2 * np.pi * t)
+                y = size/2 * np.sin(2 * np.pi * t)
+                z = 0
+                
+            elif pattern == "spiral":
+                # Spiral pattern with increasing radius
+                r = size/2 * t
+                x = r * np.cos(4 * np.pi * t)
+                y = r * np.sin(4 * np.pi * t)
+                z = 0
+                
+            elif pattern == "helix":
+                # Helical pattern
+                x = size/2 * np.cos(2 * np.pi * t)
+                y = size/2 * np.sin(2 * np.pi * t)
+                z = size * (t - 0.5)  # Vertical motion
+                
+            elif pattern == "lemniscate":
+                # 3D lemniscate
+                x = size/2 * np.cos(2 * np.pi * t)
+                y = size/2 * np.sin(2 * np.pi * t) * np.cos(2 * np.pi * t)
+                z = size/4 * np.sin(4 * np.pi * t)
+                
+            else:
+                raise ValueError(f"Unknown trajectory pattern: {pattern}")
+            
+            position = center + np.array([x, y, z])
+            
+            # Calculate velocity for smooth motion
+            if i > 0:
+                velocity = (position - trajectory[-1]['position']) / (duration / num_points)
+            else:
+                velocity = np.zeros(3)
+            
+            trajectory.append({
+                'time': t * duration,
+                'position': position,
+                'velocity': velocity,
+                'parameter': t
+            })
+        
+        return trajectory
+    
+    def animate_trajectory(
+        self,
+        trajectory: List[Dict[str, Any]],
+        particle_index: int = 0,
+        real_time: bool = True
+    ):
+        """
+        Animate particle along trajectory.
+        
+        Args:
+            trajectory: Trajectory waypoints from create_trajectory
+            particle_index: Index of particle to animate (0 for first particle)
+            real_time: Whether to execute in real time or as fast as possible
+        """
+        if particle_index >= len(self.particles):
+            raise ValueError(f"Particle index {particle_index} out of range")
+        
+        particle = self.particles[particle_index]
+        
+        for waypoint in trajectory:
+            # Update particle position
+            particle.position = waypoint['position'].copy()
+            particle.velocity = waypoint['velocity'].copy()
+            
+            # Update trap configuration
+            positions = [p.position.tolist() for p in self.particles]
+            self.trap_phases = self.create_multi_trap(positions)
+            
+            # Apply to hardware
+            if self.trap_phases is not None:
+                self.array.set_phases(self.trap_phases)
+            
+            if real_time:
+                # Wait for real-time execution
+                if len(trajectory) > 1:
+                    dt = trajectory[1]['time'] - trajectory[0]['time']
+                    time.sleep(dt)
+    
+    def create_path(
+        self,
+        waypoints: List[List[float]],
+        speed: float = 0.05,
+        method: str = "smooth"
+    ) -> List[Dict[str, Any]]:
+        """
+        Create path through multiple waypoints.
+        
+        Args:
+            waypoints: List of 3D waypoints
+            speed: Movement speed in m/s
+            method: Path planning method ("direct", "smooth", "minimum_jerk")
+            
+        Returns:
+            Trajectory through all waypoints
+        """
+        full_trajectory = []
+        current_time = 0
+        
+        for i in range(len(waypoints) - 1):
+            start = np.array(waypoints[i])
+            end = np.array(waypoints[i + 1])
+            
+            if method == "direct":
+                segment = self._plan_direct_trajectory(start, end, speed)
+            elif method == "smooth":
+                segment = self._plan_smooth_trajectory(start, end, speed)
+            elif method == "minimum_jerk":
+                segment = self._plan_minimum_jerk_trajectory(start, end, speed)
+            else:
+                raise ValueError(f"Unknown path method: {method}")
+            
+            # Adjust time offsets
+            for waypoint in segment:
+                waypoint['time'] += current_time
+                full_trajectory.append(waypoint)
+            
+            if segment:
+                current_time = segment[-1]['time']
+        
+        return full_trajectory
+    
+    def move_along_path(
+        self,
+        particle: Particle,
+        path: List[Dict[str, Any]]
+    ):
+        """
+        Move particle along predefined path.
+        
+        Args:
+            particle: Particle to move
+            path: Path trajectory from create_path
+        """
+        self._execute_trajectory(particle, path)
+    
+    def add_particle_cloud(
+        self,
+        num_particles: int,
+        initial_pattern: str = "grid",
+        radius: float = 0.03
+    ) -> List[Particle]:
+        """
+        Add multiple particles in a pattern.
+        
+        Args:
+            num_particles: Number of particles to add
+            initial_pattern: Initial arrangement pattern
+            radius: Pattern size
+            
+        Returns:
+            List of created particles
+        """
+        # Clear existing particles
+        self.particles = []
+        
+        # Generate positions based on pattern
+        positions = self._get_formation_positions(initial_pattern, num_particles)
+        
+        # Create particles
+        particles = []
+        for i, pos in enumerate(positions):
+            particle = self.add_particle(
+                position=pos.tolist(),
+                radius=self.default_particle_size,
+                density=self.default_particle_density
+            )
+            particles.append(particle)
+        
+        return particles
+    
+    def perform_choreography(
+        self,
+        choreography: List[List[Dict[str, Any]]]
+    ):
+        """
+        Execute choreographed movement sequence.
+        
+        Args:
+            choreography: Choreography from create_choreography
+        """
+        for formation_trajectories in choreography:
+            # Execute all particle trajectories simultaneously
+            max_length = max(len(traj) for traj in formation_trajectories)
+            
+            for step in range(max_length):
+                # Update all particles for this step
+                for particle, trajectory in zip(self.particles, formation_trajectories):
+                    if step < len(trajectory):
+                        waypoint = trajectory[step]
+                        particle.position = waypoint['position'].copy()
+                        particle.velocity = waypoint['velocity'].copy()
+                
+                # Update trap configuration
+                self._update_traps()
+                
+                # Apply to hardware
+                if self.trap_phases is not None:
+                    self.array.set_phases(self.trap_phases)
+                
+                # Wait for next update
+                time.sleep(1.0 / self.update_rate)

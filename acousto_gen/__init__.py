@@ -39,8 +39,15 @@ try:
         GeneticOptimizer,
         NeuralHologramGenerator
     )
-    from applications.levitation.acoustic_levitator import AcousticLevitator, Particle
+    from applications.levitation.acoustic_levitator import AcousticLevitator, Particle, MultiPointLevitation
     from applications.haptics.haptic_renderer import HapticRenderer
+    from hardware.drivers.hardware_interface import (
+        HardwareInterface,
+        SerialHardware, 
+        NetworkHardware,
+        SimulationHardware,
+        HardwareStatus
+    )
     
     # Complete import success
     IMPORT_SUCCESS = True
@@ -60,8 +67,14 @@ try:
         "GeneticOptimizer",
         "NeuralHologramGenerator",
         "AcousticLevitator",
+        "MultiPointLevitation",
         "Particle",
         "HapticRenderer",
+        "HardwareInterface",
+        "SerialHardware",
+        "NetworkHardware", 
+        "SimulationHardware",
+        "HardwareStatus",
         "__version__"
     ]
     

@@ -15,6 +15,26 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 src_path = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_path))
 
+# Setup logging
+try:
+    from logging.logger_config import initialize_logging, get_logger, LogOperation
+    loggers = initialize_logging(log_level="INFO", log_dir="logs", console_output=False)
+    logger = get_logger('acousto_gen.cli')
+    LOGGING_AVAILABLE = True
+except ImportError:
+    print("⚠️ Logging configuration not available - using basic logging")
+    import logging
+    logger = logging.getLogger('acousto_gen.cli')
+    LOGGING_AVAILABLE = False
+    
+    class LogOperation:
+        def __init__(self, logger, operation, **kwargs):
+            pass
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            pass
+
 console = Console()
 app = typer.Typer(
     name="acousto-gen",
@@ -41,6 +61,14 @@ def demo(
     """Run a complete holography demo with focus generation."""
     
     console.print("🎯 Starting Acousto-Gen Demo", style="bold blue")
+    
+    logger.info("Starting demo command", extra={
+        'operation': 'demo_command',
+        'array_type': array_type,
+        'frequency': frequency,
+        'focus_position': focus_position,
+        'iterations': iterations
+    })
     
     try:
         # Parse focus position
@@ -93,12 +121,13 @@ def demo(
                 if iteration % 50 == 0:
                     progress.update(task, description=f"Iteration {iteration}: Loss = {loss:.4f}")
             
-            phases = hologram.optimize(
+            result = hologram.optimize(
                 target=target,
                 iterations=iterations,
                 learning_rate=0.05,
                 callback=callback
             )
+            phases = result['phases']
             
             progress.update(task, description="Computing final field...")
             final_field = hologram.compute_field()
@@ -193,9 +222,80 @@ def demo(
                 console.print("⚠️  Visualization dependencies not available", style="yellow")
         
         console.print("\n🎉 Demo completed successfully!", style="bold green")
+        logger.info("Demo completed successfully", extra={'operation': 'demo_command'})
         
     except Exception as e:
         console.print(f"❌ Error: {e}", style="bold red")
+        logger.error(f"Demo failed: {e}", extra={
+            'operation': 'demo_command',
+            'error_type': type(e).__name__,
+            'error_message': str(e)
+        }, exc_info=True)
+        raise typer.Exit(1)
+
+
+@app.command()
+def simulate(
+    frequency: float = typer.Option(40000, "--frequency", "-f", help="Frequency in Hz"),
+    output: Optional[str] = typer.Option(None, "--output", "-o", help="Output file path"),
+    array_type: str = typer.Option("ultraleap", "--array", "-a", help="Array type"),
+    iterations: int = typer.Option(100, "--iterations", "-i", help="Number of iterations")
+) -> None:
+    """Run acoustic simulation."""
+    
+    console.print(f"🌊 Running simulation at {frequency} Hz", style="bold blue")
+    
+    if output:
+        console.print(f"📁 Output will be saved to: {output}")
+    
+    try:
+        # Create simple simulation
+        if array_type == "ultraleap":
+            from physics.transducers.transducer_array import UltraLeap256
+            transducer = UltraLeap256()
+        else:
+            from physics.transducers.transducer_array import CircularArray
+            transducer = CircularArray(radius=0.1, num_elements=64)
+        
+        from acousto_gen.core import AcousticHologram
+        hologram = AcousticHologram(
+            transducer=transducer,
+            frequency=frequency,
+            resolution=2e-3
+        )
+        
+        # Create simple target
+        target = hologram.create_focus_point((0, 0, 0.1))
+        
+        # Run optimization
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            task = progress.add_task("Optimizing phases...", total=None)
+            
+            def callback(iteration, loss, phases):
+                if iteration % 20 == 0:
+                    progress.update(task, description=f"Iteration {iteration}: Loss = {loss:.4f}")
+            
+            result = hologram.optimize(
+                target=target,
+                iterations=iterations,
+                callback=callback
+            )
+            phases = result['phases']
+        
+        # Save results if requested
+        if output:
+            field = hologram.compute_field()
+            field.save(output)
+            console.print(f"✅ Simulation results saved to {output}")
+        
+        console.print("🎉 Simulation completed successfully!", style="bold green")
+        
+    except Exception as e:
+        console.print(f"❌ Simulation failed: {e}", style="bold red")
         raise typer.Exit(1)
 
 
@@ -219,12 +319,85 @@ def optimize(
         with open(config_path, 'r') as f:
             config = json.load(f)
         
-        # Implementation would load config and run optimization
-        console.print("⚠️  Configuration-based optimization not yet implemented", style="yellow")
-        console.print("Use 'acousto-gen demo' for a working example")
+        # Extract configuration parameters
+        frequency = config.get('frequency', 40e3)
+        array_config = config.get('array', {'type': 'ultraleap'})
+        target_config = config.get('target', {})
+        
+        console.print("🎯 Setting up optimization from configuration...")
+        
+        # Create transducer based on config
+        array_type = array_config.get('type', 'ultraleap')
+        if array_type == "ultraleap":
+            from physics.transducers.transducer_array import UltraLeap256
+            transducer = UltraLeap256()
+        elif array_type == "circular":
+            from physics.transducers.transducer_array import CircularArray
+            transducer = CircularArray(
+                radius=array_config.get('radius', 0.1),
+                num_elements=array_config.get('elements', 64)
+            )
+        else:
+            raise ValueError(f"Unknown array type: {array_type}")
+        
+        # Create hologram
+        from acousto_gen.core import AcousticHologram
+        hologram = AcousticHologram(
+            transducer=transducer,
+            frequency=frequency,
+            medium=config.get('medium', 'air'),
+            resolution=config.get('resolution', 2e-3)
+        )
+        
+        # Create target based on config
+        if target_config.get('type') == 'focus_point':
+            target = hologram.create_focus_point(
+                position=tuple(target_config.get('position', [0, 0, 0.1])),
+                pressure=target_config.get('pressure', 3000)
+            )
+        elif target_config.get('type') == 'multi_focus':
+            target = hologram.create_multi_focus_target(
+                focal_points=target_config.get('focal_points', [
+                    {'position': [0, 0, 0.1], 'pressure': 3000}
+                ])
+            )
+        else:
+            # Default single focus
+            target = hologram.create_focus_point((0, 0, 0.1))
+        
+        # Run optimization
+        console.print(f"⚡ Running optimization with {method} method...")
+        
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            task = progress.add_task("Optimizing...", total=None)
+            
+            def callback(iteration, loss, phases):
+                if iteration % 100 == 0:
+                    progress.update(task, description=f"Iteration {iteration}: Loss = {loss:.6f}")
+            
+            result = hologram.optimize(
+                target=target,
+                iterations=iterations,
+                method=method,
+                callback=callback
+            )
+        
+        # Save results
+        output_path = Path(output)
+        output_path.mkdir(exist_ok=True)
+        
+        hologram.save_configuration(output_path / "hologram_config.json")
+        field = hologram.compute_field()
+        field.save(output_path / "optimized_field.h5")
+        
+        console.print(f"✅ Optimization completed! Results saved to {output_path}")
         
     except Exception as e:
-        console.print(f"❌ Error loading configuration: {e}", style="bold red")
+        console.print(f"❌ Error: {e}", style="bold red")
         raise typer.Exit(1)
 
 
@@ -293,8 +466,9 @@ def benchmark(
         
         # Benchmark optimization
         start_time = time.time()
-        phases = hologram.optimize(target, iterations=iterations)
+        result = hologram.optimize(target, iterations=iterations)
         optim_time = time.time() - start_time
+        phases = result['phases']
         
         # Benchmark field computation
         start_time = time.time()
