@@ -1,0 +1,216 @@
+version: '3.8'
+
+services:
+  # Main Acousto-Gen Application
+  acousto-gen:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: acousto-gen-app
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app/src:/app
+      - ACOUSTO_ENV=production
+      - ACOUSTO_LOG_LEVEL=INFO
+      - ACOUSTO_ADMIN_PASSWORD=${ACOUSTO_ADMIN_PASSWORD:-change_me_in_production}
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://acousto:${POSTGRES_PASSWORD}@postgres:5432/acousto_db
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./cache:/app/cache
+    ports:
+      - "8000:8000"  # API
+      - "8080:8080"  # WebSocket
+    depends_on:
+      - redis
+      - postgres
+      - prometheus
+    networks:
+      - acousto-network
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+  # Worker Nodes for Distributed Processing
+  acousto-worker-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: acousto-worker-1
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app/src:/app
+      - ACOUSTO_ENV=production
+      - ACOUSTO_LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379
+      - WORKER_ID=worker-1
+      - WORKER_TYPE=cpu
+    volumes:
+      - ./logs:/app/logs
+      - ./cache:/app/cache
+    depends_on:
+      - redis
+    networks:
+      - acousto-network
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+
+  acousto-worker-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu-worker
+    container_name: acousto-worker-gpu
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app/src:/app
+      - ACOUSTO_ENV=production
+      - ACOUSTO_LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379
+      - WORKER_ID=worker-gpu
+      - WORKER_TYPE=gpu
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./logs:/app/logs
+      - ./cache:/app/cache
+    depends_on:
+      - redis
+    networks:
+      - acousto-network
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Redis for Caching and Message Queue
+  redis:
+    image: redis:7-alpine
+    container_name: acousto-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - acousto-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL for Persistent Data
+  postgres:
+    image: postgres:15-alpine
+    container_name: acousto-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=acousto_db
+      - POSTGRES_USER=acousto
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-secure_password_change_me}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - acousto-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acousto"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus for Metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: acousto-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - acousto-network
+
+  # Grafana for Visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: acousto-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    networks:
+      - acousto-network
+    depends_on:
+      - prometheus
+
+  # Nginx Load Balancer
+  nginx:
+    image: nginx:alpine
+    container_name: acousto-nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./logs/nginx:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - acousto-network
+    depends_on:
+      - acousto-gen
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis-data:
+  postgres-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  acousto-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

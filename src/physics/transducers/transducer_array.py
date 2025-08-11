@@ -73,6 +73,9 @@ class TransducerArray(ABC):
         self.current_phases = None
         self.current_amplitudes = None
         
+        # Hardware interface (optional)
+        self.hardware_interface = None
+        
         # Initialize array geometry
         self._setup_array()
     
@@ -105,6 +108,10 @@ class TransducerArray(ABC):
             raise ValueError(f"Expected {len(self.elements)} phases, got {len(phases)}")
         
         self.current_phases = np.array(phases)
+        
+        # Send to hardware if connected
+        if self.hardware_interface:
+            self.hardware_interface.send_phases(self.get_effective_phases())
     
     def set_amplitudes(self, amplitudes: np.ndarray):
         """
@@ -118,6 +125,10 @@ class TransducerArray(ABC):
         
         # Clip to valid range
         self.current_amplitudes = np.clip(amplitudes, 0, 1)
+        
+        # Send to hardware if connected
+        if self.hardware_interface:
+            self.hardware_interface.send_amplitudes(self.get_effective_amplitudes())
     
     def get_effective_amplitudes(self) -> np.ndarray:
         """Get effective amplitudes including calibration factors."""
@@ -176,6 +187,47 @@ class TransducerArray(ABC):
         with open(filepath, 'w') as f:
             json.dump(config, f, indent=2)
     
+    def connect_hardware(self, hardware_interface):
+        """
+        Connect hardware interface for real-time control.
+        
+        Args:
+            hardware_interface: Instance of HardwareInterface subclass
+        """
+        self.hardware_interface = hardware_interface
+        
+        # Verify element count matches
+        if hasattr(hardware_interface, 'num_elements'):
+            if hardware_interface.num_elements != len(self.elements):
+                raise ValueError(
+                    f"Hardware elements ({hardware_interface.num_elements}) "
+                    f"don't match array elements ({len(self.elements)})"
+                )
+    
+    def disconnect_hardware(self):
+        """Disconnect hardware interface."""
+        if self.hardware_interface:
+            self.hardware_interface.disconnect()
+            self.hardware_interface = None
+    
+    def activate(self):
+        """Activate transducer array."""
+        if self.hardware_interface:
+            return self.hardware_interface.activate()
+        return True
+    
+    def deactivate(self):
+        """Deactivate transducer array."""
+        if self.hardware_interface:
+            return self.hardware_interface.deactivate()
+        return True
+    
+    def get_hardware_status(self):
+        """Get hardware status."""
+        if self.hardware_interface:
+            return self.hardware_interface.get_status()
+        return None
+    
     def load_configuration(self, filepath: str):
         """Load array configuration from JSON file."""
         with open(filepath, 'r') as f:
@@ -200,12 +252,23 @@ class TransducerArray(ABC):
 class UltraLeap256(TransducerArray):
     """UltraLeap 256-element array (16x16 grid)."""
     
-    def __init__(self):
+    def __init__(self, hardware_interface=None):
         super().__init__(
             frequency=40e3,
             element_radius=5e-3,
             name="UltraLeap 256"
         )
+        
+        # Connect default simulation hardware if none provided
+        if hardware_interface is None:
+            try:
+                from hardware.drivers.hardware_interface import SimulationHardware
+                hardware_interface = SimulationHardware(name="UltraLeap 256 Sim", num_elements=256)
+            except ImportError:
+                pass
+        
+        if hardware_interface:
+            self.connect_hardware(hardware_interface)
     
     def _setup_array(self):
         """Setup 16x16 grid array geometry."""

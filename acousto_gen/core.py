@@ -35,6 +35,49 @@ from physics.propagation.wave_propagator import WavePropagator, MediumProperties
 from models.acoustic_field import AcousticField, create_focus_target
 from physics.transducers.transducer_array import TransducerArray
 
+# Import monitoring and validation modules
+try:
+    from validation.input_validator import AcousticParameterValidator, ValidationError
+    from monitoring.metrics import metrics_collector, track_optimization, SpanTracer
+    from monitoring.health_checks import health_checker
+    MONITORING_AVAILABLE = True
+except ImportError:
+    print("⚠️ Monitoring modules not available - using basic error handling")
+    MONITORING_AVAILABLE = False
+    
+    # Mock classes for graceful degradation
+    class ValidationError(Exception):
+        pass
+    
+    class AcousticParameterValidator:
+        def validate_frequency(self, freq):
+            if freq <= 0 or freq > 10e6:
+                raise ValidationError("Invalid frequency")
+            return freq
+        def validate_position(self, pos):
+            return np.array(pos)
+        def validate_pressure(self, pressure):
+            if pressure < 0:
+                raise ValidationError("Pressure must be non-negative")
+            return pressure
+    
+    def track_optimization(method):
+        def decorator(func):
+            return func
+        return decorator
+    
+    class SpanTracer:
+        @staticmethod
+        def trace(name, attributes=None):
+            from contextlib import contextmanager
+            @contextmanager
+            def null_context():
+                yield None
+            return null_context()
+    
+    metrics_collector = None
+    health_checker = None
+
 
 class AcousticHologram:
     """Core acoustic hologram generator and optimizer.
@@ -74,10 +117,30 @@ class AcousticHologram:
         bounds: Optional[List[Tuple[float, float]]] = None,
         device: str = "cpu"
     ) -> None:
+        # Initialize validator
+        self.validator = AcousticParameterValidator()
+        
+        # Validate inputs
+        try:
+            self.frequency = self.validator.validate_frequency(frequency)
+            self.resolution = self.validator.validate_resolution(resolution) if hasattr(self.validator, 'validate_resolution') else resolution
+            
+            # Validate bounds if provided
+            if bounds is not None:
+                if hasattr(self.validator, 'validate_field_bounds'):
+                    bounds = self.validator.validate_field_bounds(bounds)
+            
+        except ValidationError as e:
+            raise ValueError(f"Invalid parameter: {e}")
+        except Exception as e:
+            # Fallback validation for basic cases
+            if frequency <= 0 or frequency > 10e6:
+                raise ValueError(f"Invalid frequency: {frequency}")
+            if resolution <= 0 or resolution > 0.1:
+                raise ValueError(f"Invalid resolution: {resolution}")
+        
         self.transducer = transducer
-        self.frequency = frequency
         self.medium_name = medium
-        self.resolution = resolution
         self.bounds = bounds or [(-0.1, 0.1), (-0.1, 0.1), (0, 0.2)]
         self.device = device
         
@@ -146,7 +209,32 @@ class AcousticHologram:
         -------
         AcousticField
             Target pressure field
+            
+        Raises
+        ------
+        ValueError
+            If parameters are invalid or out of safe ranges
         """
+        # Validate inputs
+        try:
+            validated_position = self.validator.validate_position(position)
+            validated_pressure = self.validator.validate_pressure(pressure)
+            
+            # Validate width
+            if width <= 0 or width > 0.1:
+                raise ValidationError(f"Focus width {width} m is invalid (must be 0 < width <= 0.1)")
+                
+        except (ValidationError, AttributeError) as e:
+            # Fallback validation
+            if not isinstance(position, (tuple, list)) or len(position) != 3:
+                raise ValueError("Position must be a 3-element tuple/list")
+            if pressure < 0:
+                raise ValueError("Pressure must be non-negative")
+            if width <= 0:
+                raise ValueError("Width must be positive")
+                
+            validated_position = np.array(position)
+            validated_pressure = float(pressure)
         # Calculate grid shape from bounds and resolution
         shape = (
             int((self.bounds[0][1] - self.bounds[0][0]) / self.resolution),
@@ -213,6 +301,7 @@ class AcousticHologram:
             metadata={'type': 'multi_focus', 'focal_points': focal_points}
         )
         
+    @track_optimization("hologram_optimization")
     def optimize(
         self,
         target: Union[AcousticField, np.ndarray],
@@ -221,7 +310,7 @@ class AcousticHologram:
         learning_rate: float = 0.01,
         lambda_smooth: float = 0.1,
         callback: Optional[callable] = None
-    ) -> np.ndarray:
+    ) -> Dict[str, Any]:
         """Optimize transducer phases to generate target pressure field.
         
         Parameters
@@ -241,31 +330,49 @@ class AcousticHologram:
             
         Returns
         -------
-        np.ndarray
-            Optimized phase array for transducers
+        Dict[str, Any]
+            Dictionary containing 'phases' (np.ndarray) and 'final_loss' (float)
         """
-        # Convert target to tensor
-        if isinstance(target, AcousticField):
-            target_field = torch.tensor(target.data, dtype=torch.complex64, device=self.device)
-        else:
-            target_field = torch.tensor(target, dtype=torch.complex64, device=self.device)
-        
-        # Initialize phases randomly
-        num_transducers = len(self.transducer.positions)
-        phases = torch.randn(num_transducers, requires_grad=True, device=self.device)
-        
-        # Fixed amplitudes (can be made optimizable later)
-        amplitudes = torch.ones(num_transducers, device=self.device)
-        
-        # Choose optimizer
-        if method == "adam":
-            optimizer = optim.Adam([phases], lr=learning_rate)
-        elif method == "sgd":
-            optimizer = optim.SGD([phases], lr=learning_rate)
-        elif method == "lbfgs":
-            optimizer = optim.LBFGS([phases], lr=learning_rate)
-        else:
-            raise ValueError(f"Unknown optimization method: {method}")
+        # Validate optimization parameters
+        try:
+            if iterations <= 0 or iterations > 10000:
+                raise ValidationError(f"Iterations {iterations} must be between 1 and 10000")
+            if learning_rate <= 0 or learning_rate > 1.0:
+                raise ValidationError(f"Learning rate {learning_rate} must be between 0 and 1")
+            if method not in ["adam", "sgd", "lbfgs"]:
+                raise ValidationError(f"Unknown optimization method: {method}")
+                
+        except (ValidationError, Exception) as e:
+            # Fallback validation
+            if iterations <= 0 or iterations > 10000:
+                raise ValueError(f"Invalid iterations: {iterations}")
+            if learning_rate <= 0 or learning_rate > 1.0:
+                raise ValueError(f"Invalid learning rate: {learning_rate}")
+                
+        # Add tracing for monitoring
+        with SpanTracer.trace("hologram_optimization", {"method": method, "iterations": iterations}):
+            # Convert target to tensor
+            if isinstance(target, AcousticField):
+                target_field = torch.tensor(target.data, dtype=torch.complex64, device=self.device)
+            else:
+                target_field = torch.tensor(target, dtype=torch.complex64, device=self.device)
+            
+            # Initialize phases randomly
+            num_transducers = len(self.transducer.positions)
+            phases = torch.randn(num_transducers, requires_grad=True, device=self.device)
+            
+            # Fixed amplitudes (can be made optimizable later)
+            amplitudes = torch.ones(num_transducers, device=self.device)
+            
+            # Choose optimizer
+            if method == "adam":
+                optimizer = optim.Adam([phases], lr=learning_rate)
+            elif method == "sgd":
+                optimizer = optim.SGD([phases], lr=learning_rate)
+            elif method == "lbfgs":
+                optimizer = optim.LBFGS([phases], lr=learning_rate)
+            else:
+                raise ValueError(f"Unknown optimization method: {method}")
         
         # Optimization history
         self.optimization_history = []
@@ -309,8 +416,15 @@ class AcousticHologram:
         
         # Store optimized phases
         self.current_phases = phases.detach().cpu().numpy()
+        final_loss = self.optimization_history[-1] if self.optimization_history else 0.0
         
-        return self.current_phases
+        # Ensure phases are in [0, 2π] range as expected by tests
+        normalized_phases = (self.current_phases % (2 * np.pi))
+        
+        return {
+            'phases': normalized_phases,
+            'final_loss': final_loss
+        }
     
     def _forward_model(self, phases, amplitudes):
         """Forward model: compute field from phases and amplitudes."""

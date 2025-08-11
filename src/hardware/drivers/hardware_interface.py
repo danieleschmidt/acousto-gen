@@ -603,3 +603,137 @@ class NetworkHardware(HardwareInterface):
                     self.socket.sendto(disconnect, (self.host, self.port))
             except:
                 pass
+
+
+class SimulationHardware(HardwareInterface):
+    """Simulation hardware interface for testing and development."""
+    
+    def __init__(
+        self,
+        name: str = "Simulation",
+        num_elements: int = 256,
+        latency: float = 0.001
+    ):
+        """
+        Initialize simulation hardware interface.
+        
+        Args:
+            name: Device name
+            num_elements: Number of transducer elements
+            latency: Simulated communication latency
+        """
+        super().__init__(name)
+        self.num_elements = num_elements
+        self.latency = latency
+        
+        # Simulated hardware state
+        self._simulated_temp = 23.5
+        self._simulated_voltage = 12.0
+        self._simulated_current = 0.5
+        self._uptime = 0.0
+        self._start_time = time.time()
+        
+        # Automatically connect in simulation
+        self.connected = True
+        logger.info(f"Initialized simulation hardware: {name} with {num_elements} elements")
+    
+    def connect(self, **kwargs) -> bool:
+        """Connect to simulation (always succeeds)."""
+        self.connected = True
+        self._start_time = time.time()
+        logger.info(f"Connected to simulation hardware: {self.name}")
+        return True
+    
+    def disconnect(self):
+        """Disconnect from simulation."""
+        self.connected = False
+        logger.info(f"Disconnected from simulation hardware: {self.name}")
+    
+    def send_phases(self, phases: np.ndarray) -> bool:
+        """Simulate sending phase values."""
+        if not self.connected:
+            return False
+        
+        # Validate input
+        if len(phases) != self.num_elements:
+            logger.error(f"Expected {self.num_elements} phases, got {len(phases)}")
+            return False
+        
+        # Simulate communication latency
+        time.sleep(self.latency)
+        
+        # Store phases
+        self.current_phases = phases.copy()
+        
+        # Simulate some thermal effects
+        self._simulated_temp += 0.01 * np.mean(phases)
+        self._simulated_current = 0.5 + 0.1 * np.std(phases)
+        
+        logger.debug(f"Sent {len(phases)} phase values to {self.name}")
+        return True
+    
+    def send_amplitudes(self, amplitudes: np.ndarray) -> bool:
+        """Simulate sending amplitude values."""
+        if not self.connected:
+            return False
+        
+        # Validate input
+        if len(amplitudes) != self.num_elements:
+            logger.error(f"Expected {self.num_elements} amplitudes, got {len(amplitudes)}")
+            return False
+        
+        # Simulate communication latency
+        time.sleep(self.latency)
+        
+        # Store amplitudes
+        self.current_amplitudes = amplitudes.copy()
+        
+        # Simulate power consumption effects
+        power = np.sum(amplitudes**2)
+        self._simulated_current = 0.3 + power * 0.2
+        self._simulated_temp += power * 0.01
+        
+        logger.debug(f"Sent {len(amplitudes)} amplitude values to {self.name}")
+        return True
+    
+    def get_status(self) -> HardwareStatus:
+        """Get simulated hardware status."""
+        if not self.connected:
+            return HardwareStatus(connected=False)
+        
+        # Update uptime
+        self._uptime = time.time() - self._start_time
+        
+        # Simulate temperature cooling
+        self._simulated_temp = max(20.0, self._simulated_temp - 0.01)
+        
+        # Simulate voltage fluctuations
+        self._simulated_voltage = 12.0 + 0.1 * np.sin(time.time())
+        
+        return HardwareStatus(
+            connected=True,
+            temperature=self._simulated_temp,
+            voltage=self._simulated_voltage,
+            current=self._simulated_current,
+            error_code=None,
+            error_message=None,
+            uptime=self._uptime
+        )
+    
+    def activate(self) -> bool:
+        """Simulate activation."""
+        if not self.connected:
+            return False
+        
+        logger.info(f"Activated {self.name}")
+        return True
+    
+    def deactivate(self) -> bool:
+        """Simulate deactivation."""
+        if not self.connected:
+            return False
+        
+        # Reset to safe state
+        self._simulated_current = 0.1
+        logger.info(f"Deactivated {self.name}")
+        return True
