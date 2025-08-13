@@ -1,0 +1,1291 @@
+{
+  "study_id": "optimization_1755056849",
+  "domain": "optimization",
+  "hypothesis": {
+    "id": "OPT_HYP_0001",
+    "title": "Multi-Scale Optimization with Hierarchical Refinement",
+    "description": "Use coarse-to-fine optimization strategy for complex hologram patterns",
+    "objective": "Achieve global optimum for multi-focus patterns with 25% better accuracy",
+    "methodology": "Start optimization on low-resolution field, progressively refine resolution while transferring phase patterns",
+    "expected_outcome": "Better global optimization, reduced local minima trapping",
+    "success_criteria": {
+      "accuracy_improvement": 0.25,
+      "global_optimum_rate": 0.8
+    },
+    "experimental_parameters": {
+      "resolution_levels": [
+        3,
+        4,
+        5
+      ],
+      "refinement_ratio": [
+        2,
+        3,
+        4
+      ],
+      "transfer_method": [
+        "interpolation",
+        "neural_upsampling"
+      ]
+    },
+    "baseline_comparison": true,
+    "statistical_significance": 0.05,
+    "created_at": "2025-08-13 03:47:29.794656+00:00"
+  },
+  "experimental_design": {
+    "hypothesis_id": "OPT_HYP_0001",
+    "experimental_type": "comparative_study",
+    "baseline_methods": [
+      "adam",
+      "sgd",
+      "lbfgs"
+    ],
+    "novel_method": "multi-scale_optimization_with_hierarchical_refinement",
+    "test_cases": [
+      {
+        "name": "single_focus",
+        "description": "Single focal point at varying distances",
+        "parameters": {
+          "positions": [
+            [
+              0,
+              0,
+              0.05
+            ],
+            [
+              0,
+              0,
+              0.061111111111111116
+            ],
+            [
+              0,
+              0,
+              0.07222222222222222
+            ],
+            [
+              0,
+              0,
+              0.08333333333333333
+            ],
+            [
+              0,
+              0,
+              0.09444444444444444
+            ],
+            [
+              0,
+              0,
+              0.10555555555555556
+            ],
+            [
+              0,
+              0,
+              0.11666666666666665
+            ],
+            [
+              0,
+              0,
+              0.12777777777777777
+            ],
+            [
+              0,
+              0,
+              0.1388888888888889
+            ],
+            [
+              0,
+              0,
+              0.15
+            ]
+          ],
+          "pressures": [
+            2000,
+            3000,
+            4000
+          ],
+          "array_sizes": [
+            64,
+            128,
+            256
+          ]
+        }
+      },
+      {
+        "name": "multi_focus",
+        "description": "Multiple focal points with varying complexity",
+        "parameters": {
+          "num_foci": [
+            2,
+            4,
+            8
+          ],
+          "separation_distances": [
+            0.01,
+            0.02,
+            0.05
+          ],
+          "pressure_ratios": [
+            1.0,
+            0.8,
+            0.5
+          ]
+        }
+      },
+      {
+        "name": "complex_patterns",
+        "description": "Complex holographic patterns for advanced applications",
+        "parameters": {
+          "pattern_types": [
+            "line_trap",
+            "ring_pattern",
+            "custom_shape"
+          ],
+          "pattern_complexity": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "noise_levels": [
+            0.0,
+            0.05,
+            0.1
+          ]
+        }
+      }
+    ],
+    "metrics": [
+      "convergence_time",
+      "final_loss",
+      "field_quality",
+      "computational_efficiency",
+      "memory_usage",
+      "numerical_stability"
+    ],
+    "repetitions": 10,
+    "randomization": "latin_hypercube",
+    "controls": [
+      "hardware_variance",
+      "temperature_drift",
+      "initial_conditions"
+    ]
+  },
+  "status": "completed",
+  "created_at": "2025-08-13T03:47:29.795585+00:00",
+  "results": [
+    {
+      "parameters": {
+        "learning_rate": 0.001,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_0"
+      },
+      "measurements": {
+        "convergence_time": [
+          100.62510496481897
+        ],
+        "final_loss": [
+          0.0018934476403291974
+        ],
+        "memory_usage": [
+          457.0133179063507
+        ],
+        "cpu_utilization": [
+          57.85048458986401
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.39850999614397,
+        "skewness": -0.22754220561236238
+      },
+      "performance_metrics": {
+        "convergence_time": 100.62510496481897,
+        "final_loss": 0.0018934476403291974,
+        "efficiency_score": 49.68744751759051,
+        "stability_index": 0.8540302534137109
+      },
+      "success": true,
+      "p_value": 0.28045072792444725,
+      "effect_size": 0.7768549197348982
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.01,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_1"
+      },
+      "measurements": {
+        "convergence_time": [
+          69.6400225822504
+        ],
+        "final_loss": [
+          0.00014248172341915097
+        ],
+        "memory_usage": [
+          484.14349899413315
+        ],
+        "cpu_utilization": [
+          70.46455595111762
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 1.4409252780589528,
+        "skewness": -0.4375061857719728
+      },
+      "performance_metrics": {
+        "convergence_time": 69.6400225822504,
+        "final_loss": 0.00014248172341915097,
+        "efficiency_score": 65.1799887088748,
+        "stability_index": 0.9072898816884375
+      },
+      "success": true,
+      "p_value": 0.17484657774078224,
+      "effect_size": 2.8693586275827627
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.1,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_2"
+      },
+      "measurements": {
+        "convergence_time": [
+          63.64650158746267
+        ],
+        "final_loss": [
+          0.00018715756407130615
+        ],
+        "memory_usage": [
+          396.7967615503565
+        ],
+        "cpu_utilization": [
+          73.04946086652821
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.30379016547378485,
+        "skewness": 0.19749274591603802
+      },
+      "performance_metrics": {
+        "convergence_time": 63.64650158746267,
+        "final_loss": 0.00018715756407130615,
+        "efficiency_score": 68.17674920626867,
+        "stability_index": 0.8632179431798184
+      },
+      "success": true,
+      "p_value": 0.2622810392875072,
+      "effect_size": 1.5110418428344554
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.1,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_0"
+      },
+      "measurements": {
+        "convergence_time": [
+          105.47698730885332
+        ],
+        "final_loss": [
+          0.00022629920525444697
+        ],
+        "memory_usage": [
+          569.4505200654993
+        ],
+        "cpu_utilization": [
+          69.61585678512101
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 1.2821409918141238,
+        "skewness": -0.19050441436590418
+      },
+      "performance_metrics": {
+        "convergence_time": 105.47698730885332,
+        "final_loss": 0.00022629920525444697,
+        "efficiency_score": 47.26150634557334,
+        "stability_index": 0.8169176691828598
+      },
+      "success": true,
+      "p_value": 0.18502454515649713,
+      "effect_size": 0.4671107769022505
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.1,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_1"
+      },
+      "measurements": {
+        "convergence_time": [
+          54.37436819796298
+        ],
+        "final_loss": [
+          0.0010748137579953906
+        ],
+        "memory_usage": [
+          690.313682269373
+        ],
+        "cpu_utilization": [
+          66.57316918082124
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.14804830279012413,
+        "skewness": -0.04366047158738977
+      },
+      "performance_metrics": {
+        "convergence_time": 54.37436819796298,
+        "final_loss": 0.0010748137579953906,
+        "efficiency_score": 72.81281590101851,
+        "stability_index": 0.9746147105660917
+      },
+      "success": true,
+      "p_value": 0.2247177386150699,
+      "effect_size": 2.7221001252866586
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.01,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_2"
+      },
+      "measurements": {
+        "convergence_time": [
+          64.05447402988008
+        ],
+        "final_loss": [
+          0.001381932713387527
+        ],
+        "memory_usage": [
+          579.8263022663135
+        ],
+        "cpu_utilization": [
+          77.48912798919105
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.46008978202353384,
+        "skewness": -0.031786928486505564
+      },
+      "performance_metrics": {
+        "convergence_time": 64.05447402988008,
+        "final_loss": 0.001381932713387527,
+        "efficiency_score": 67.97276298505996,
+        "stability_index": 0.9839043012243871
+      },
+      "success": true,
+      "p_value": 0.14095380893561524,
+      "effect_size": 1.5663636495407984
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.1,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_0"
+      },
+      "measurements": {
+        "convergence_time": [
+          89.02342475785527
+        ],
+        "final_loss": [
+          0.0008174270762535624
+        ],
+        "memory_usage": [
+          470.5591562474187
+        ],
+        "cpu_utilization": [
+          77.47204036876128
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 1.8341895039863765,
+        "skewness": -0.2968494245850188
+      },
+      "performance_metrics": {
+        "convergence_time": 89.02342475785527,
+        "final_loss": 0.0008174270762535624,
+        "efficiency_score": 55.48828762107237,
+        "stability_index": 0.9953233292727991
+      },
+      "success": true,
+      "p_value": 0.2701647249443394,
+      "effect_size": 1.455589314927219
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.01,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_1"
+      },
+      "measurements": {
+        "convergence_time": [
+          62.75515396289659
+        ],
+        "final_loss": [
+          0.0007866882345870827
+        ],
+        "memory_usage": [
+          507.88063952057166
+        ],
+        "cpu_utilization": [
+          66.90039798433558
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.16280637947987459,
+        "skewness": 0.23935251103452865
+      },
+      "performance_metrics": {
+        "convergence_time": 62.75515396289659,
+        "final_loss": 0.0007866882345870827,
+        "efficiency_score": 68.6224230185517,
+        "stability_index": 0.8631657816565036
+      },
+      "success": true,
+      "p_value": 0.2974548824491859,
+      "effect_size": 1.6075339374467217
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.01,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_2"
+      },
+      "measurements": {
+        "convergence_time": [
+          84.04517633456142
+        ],
+        "final_loss": [
+          2.3336617942814075e-06
+        ],
+        "memory_usage": [
+          604.1594901380606
+        ],
+        "cpu_utilization": [
+          73.45566596973688
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.8073546999379216,
+        "skewness": 0.18899320798638877
+      },
+      "performance_metrics": {
+        "convergence_time": 84.04517633456142,
+        "final_loss": 2.3336617942814075e-06,
+        "efficiency_score": 57.97741183271929,
+        "stability_index": 0.8490557114683436
+      },
+      "success": true,
+      "p_value": 0.062343112206702155,
+      "effect_size": 1.0885799930257511
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.001,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_0"
+      },
+      "measurements": {
+        "convergence_time": [
+          69.4306634133009
+        ],
+        "final_loss": [
+          0.00044599711745048923
+        ],
+        "memory_usage": [
+          610.15544265021
+        ],
+        "cpu_utilization": [
+          74.82750059176178
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 1.7350829781728583,
+        "skewness": -0.5718038609590801
+      },
+      "performance_metrics": {
+        "convergence_time": 69.4306634133009,
+        "final_loss": 0.00044599711745048923,
+        "efficiency_score": 65.28466829334954,
+        "stability_index": 0.8564653719664025
+      },
+      "success": true,
+      "p_value": 0.7807287246300021,
+      "effect_size": 0.005160243690429199
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.01,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_1"
+      },
+      "measurements": {
+        "convergence_time": [
+          62.59070260625221
+        ],
+        "final_loss": [
+          2.3000857465353126e-05
+        ],
+        "memory_usage": [
+          498.1721065590207
+        ],
+        "cpu_utilization": [
+          72.80019563842013
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.15529857662058033,
+        "skewness": 0.03277945135200274
+      },
+      "performance_metrics": {
+        "convergence_time": 62.59070260625221,
+        "final_loss": 2.3000857465353126e-05,
+        "efficiency_score": 68.7046486968739,
+        "stability_index": 0.9374332025994162
+      },
+      "success": true,
+      "p_value": 0.1953544875294135,
+      "effect_size": 1.9866416401619382
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.001,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_2"
+      },
+      "measurements": {
+        "convergence_time": [
+          96.28310428599326
+        ],
+        "final_loss": [
+          0.0007199654348909153
+        ],
+        "memory_usage": [
+          393.06529797205917
+        ],
+        "cpu_utilization": [
+          70.74580854787543
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.8235423501729615,
+        "skewness": 0.7761275221822262
+      },
+      "performance_metrics": {
+        "convergence_time": 96.28310428599326,
+        "final_loss": 0.0007199654348909153,
+        "efficiency_score": 51.85844785700337,
+        "stability_index": 0.8273961553147124
+      },
+      "success": true,
+      "p_value": 0.37242145707601954,
+      "effect_size": 2.5882561534713173
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.01,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_0"
+      },
+      "measurements": {
+        "convergence_time": [
+          72.88340490804804
+        ],
+        "final_loss": [
+          0.0010493439843142394
+        ],
+        "memory_usage": [
+          457.784915005231
+        ],
+        "cpu_utilization": [
+          75.11646045185596
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 1.464355003235037,
+        "skewness": -0.13313350937686957
+      },
+      "performance_metrics": {
+        "convergence_time": 72.88340490804804,
+        "final_loss": 0.0010493439843142394,
+        "efficiency_score": 63.55829754597598,
+        "stability_index": 0.9001344237756577
+      },
+      "success": true,
+      "p_value": 0.025203934662046585,
+      "effect_size": 1.5525770598225905
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.1,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_1"
+      },
+      "measurements": {
+        "convergence_time": [
+          68.78253275386125
+        ],
+        "final_loss": [
+          0.0012012567786668284
+        ],
+        "memory_usage": [
+          519.3665414118706
+        ],
+        "cpu_utilization": [
+          59.03682315917402
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.23196334578675437,
+        "skewness": -0.1322304229454525
+      },
+      "performance_metrics": {
+        "convergence_time": 68.78253275386125,
+        "final_loss": 0.0012012567786668284,
+        "efficiency_score": 65.60873362306938,
+        "stability_index": 0.8037733689338863
+      },
+      "success": true,
+      "p_value": 0.19355248587599172,
+      "effect_size": 2.5758718724021143
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.1,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_2"
+      },
+      "measurements": {
+        "convergence_time": [
+          120.16441053098293
+        ],
+        "final_loss": [
+          0.00018212854364231342
+        ],
+        "memory_usage": [
+          613.2558147124452
+        ],
+        "cpu_utilization": [
+          78.3025651093877
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.8038590990928826,
+        "skewness": 0.015089737633308514
+      },
+      "performance_metrics": {
+        "convergence_time": 120.16441053098293,
+        "final_loss": 0.00018212854364231342,
+        "efficiency_score": 39.91779473450853,
+        "stability_index": 0.9179721073674725
+      },
+      "success": true,
+      "p_value": 0.2992856974996147,
+      "effect_size": 1.2773101061966992
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.001,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_0"
+      },
+      "measurements": {
+        "convergence_time": [
+          52.95308936750199
+        ],
+        "final_loss": [
+          0.002147876685092235
+        ],
+        "memory_usage": [
+          581.4280803280168
+        ],
+        "cpu_utilization": [
+          77.03708473160434
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 1.4558831862529564,
+        "skewness": 0.09111030312859013
+      },
+      "performance_metrics": {
+        "convergence_time": 52.95308936750199,
+        "final_loss": 0.002147876685092235,
+        "efficiency_score": 73.523455316249,
+        "stability_index": 0.868497697352415
+      },
+      "success": true,
+      "p_value": 0.4846518424092281,
+      "effect_size": 2.671830886212768
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.1,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_1"
+      },
+      "measurements": {
+        "convergence_time": [
+          73.64295608017433
+        ],
+        "final_loss": [
+          0.00032550231564437693
+        ],
+        "memory_usage": [
+          602.991390367702
+        ],
+        "cpu_utilization": [
+          64.72614500961586
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.9421484704393137,
+        "skewness": 0.1284339534511392
+      },
+      "performance_metrics": {
+        "convergence_time": 73.64295608017433,
+        "final_loss": 0.00032550231564437693,
+        "efficiency_score": 63.178521959912835,
+        "stability_index": 0.8938766054894847
+      },
+      "success": true,
+      "p_value": 0.17647743010666211,
+      "effect_size": 1.0118552919338555
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.001,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_2"
+      },
+      "measurements": {
+        "convergence_time": [
+          95.49617406403588
+        ],
+        "final_loss": [
+          0.00017423258064158513
+        ],
+        "memory_usage": [
+          556.0564542755857
+        ],
+        "cpu_utilization": [
+          57.63225684966756
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.7410758076054395,
+        "skewness": 0.1863972842082736
+      },
+      "performance_metrics": {
+        "convergence_time": 95.49617406403588,
+        "final_loss": 0.00017423258064158513,
+        "efficiency_score": 52.25191296798206,
+        "stability_index": 0.9582421270431916
+      },
+      "success": true,
+      "p_value": 0.04875638802222244,
+      "effect_size": 1.0985591297991193
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.01,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_0"
+      },
+      "measurements": {
+        "convergence_time": [
+          95.46425131800864
+        ],
+        "final_loss": [
+          0.0020912485882252276
+        ],
+        "memory_usage": [
+          491.66232988122783
+        ],
+        "cpu_utilization": [
+          72.20585386938603
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 1.3390588796331635,
+        "skewness": 0.5074581738994781
+      },
+      "performance_metrics": {
+        "convergence_time": 95.46425131800864,
+        "final_loss": 0.0020912485882252276,
+        "efficiency_score": 52.26787434099568,
+        "stability_index": 0.983940572264579
+      },
+      "success": true,
+      "p_value": 0.18017602070305988,
+      "effect_size": 0.4075644329245332
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.01,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_1"
+      },
+      "measurements": {
+        "convergence_time": [
+          79.50601778125838
+        ],
+        "final_loss": [
+          0.0009878558902577674
+        ],
+        "memory_usage": [
+          534.6953454708639
+        ],
+        "cpu_utilization": [
+          100.15032428305003
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 1.4691579706619913,
+        "skewness": 0.15469241781474785
+      },
+      "performance_metrics": {
+        "convergence_time": 79.50601778125838,
+        "final_loss": 0.0009878558902577674,
+        "efficiency_score": 60.24699110937081,
+        "stability_index": 0.8462831406338063
+      },
+      "success": true,
+      "p_value": 0.4406752767471405,
+      "effect_size": 1.5444119907623801
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.1,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_2"
+      },
+      "measurements": {
+        "convergence_time": [
+          74.15570165445237
+        ],
+        "final_loss": [
+          0.0008334275005468847
+        ],
+        "memory_usage": [
+          545.9323321368963
+        ],
+        "cpu_utilization": [
+          79.4844640033435
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.8658103267758988,
+        "skewness": 0.09586657615154881
+      },
+      "performance_metrics": {
+        "convergence_time": 74.15570165445237,
+        "final_loss": 0.0008334275005468847,
+        "efficiency_score": 62.922149172773814,
+        "stability_index": 0.9195275324494311
+      },
+      "success": true,
+      "p_value": 0.1403001602692671,
+      "effect_size": 1.1376426955453252
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.01,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_0"
+      },
+      "measurements": {
+        "convergence_time": [
+          79.53066351838099
+        ],
+        "final_loss": [
+          0.0012660763198599186
+        ],
+        "memory_usage": [
+          475.9903507187878
+        ],
+        "cpu_utilization": [
+          75.56653682992186
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 1.3707420214891817,
+        "skewness": -0.06375484800908544
+      },
+      "performance_metrics": {
+        "convergence_time": 79.53066351838099,
+        "final_loss": 0.0012660763198599186,
+        "efficiency_score": 60.234668240809505,
+        "stability_index": 0.9329323690991468
+      },
+      "success": true,
+      "p_value": 0.19615883857203628,
+      "effect_size": 2.4715199628413123
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.001,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_1"
+      },
+      "measurements": {
+        "convergence_time": [
+          73.5695971928335
+        ],
+        "final_loss": [
+          0.00039708767353832105
+        ],
+        "memory_usage": [
+          523.0454180690738
+        ],
+        "cpu_utilization": [
+          79.07060529464569
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 1.6169328985467406,
+        "skewness": -0.41674295112114346
+      },
+      "performance_metrics": {
+        "convergence_time": 73.5695971928335,
+        "final_loss": 0.00039708767353832105,
+        "efficiency_score": 63.21520140358325,
+        "stability_index": 0.9654999275341789
+      },
+      "success": true,
+      "p_value": 0.09424429451597802,
+      "effect_size": 1.628897076105492
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.1,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_2"
+      },
+      "measurements": {
+        "convergence_time": [
+          74.51511944148693
+        ],
+        "final_loss": [
+          0.0004462962865617316
+        ],
+        "memory_usage": [
+          446.30425973726165
+        ],
+        "cpu_utilization": [
+          91.36849877337386
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.7784813389414033,
+        "skewness": -0.29804607873587335
+      },
+      "performance_metrics": {
+        "convergence_time": 74.51511944148693,
+        "final_loss": 0.0004462962865617316,
+        "efficiency_score": 62.742440279256535,
+        "stability_index": 0.8989636710896853
+      },
+      "success": true,
+      "p_value": 0.19609895444349548,
+      "effect_size": 2.7540463429551747
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.1,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_0"
+      },
+      "measurements": {
+        "convergence_time": [
+          68.48488051625381
+        ],
+        "final_loss": [
+          0.0005054630841321878
+        ],
+        "memory_usage": [
+          460.01041798740357
+        ],
+        "cpu_utilization": [
+          90.61129484850439
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 1.1399884209039022,
+        "skewness": 0.0558337815903129
+      },
+      "performance_metrics": {
+        "convergence_time": 68.48488051625381,
+        "final_loss": 0.0005054630841321878,
+        "efficiency_score": 65.7575597418731,
+        "stability_index": 0.9026244256275233
+      },
+      "success": true,
+      "p_value": 0.2208572547406995,
+      "effect_size": 2.3079801914178555
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.1,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_1"
+      },
+      "measurements": {
+        "convergence_time": [
+          64.204260284874
+        ],
+        "final_loss": [
+          0.0010908282055395334
+        ],
+        "memory_usage": [
+          553.1626112447512
+        ],
+        "cpu_utilization": [
+          44.4444665711502
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.4782031338358514,
+        "skewness": -0.10347896880615358
+      },
+      "performance_metrics": {
+        "convergence_time": 64.204260284874,
+        "final_loss": 0.0010908282055395334,
+        "efficiency_score": 67.897869857563,
+        "stability_index": 0.8225069649399622
+      },
+      "success": true,
+      "p_value": 0.17369940957594687,
+      "effect_size": 3.019364656045239
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.01,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_2"
+      },
+      "measurements": {
+        "convergence_time": [
+          110.3099513620582
+        ],
+        "final_loss": [
+          0.0011865676945233938
+        ],
+        "memory_usage": [
+          488.8881532281879
+        ],
+        "cpu_utilization": [
+          94.72995895988501
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.05855238974306817,
+        "skewness": -0.11268324165707158
+      },
+      "performance_metrics": {
+        "convergence_time": 110.3099513620582,
+        "final_loss": 0.0011865676945233938,
+        "efficiency_score": 44.8450243189709,
+        "stability_index": 0.9289902370468516
+      },
+      "success": true,
+      "p_value": 0.2520842952059159,
+      "effect_size": 1.8257107450530652
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.1,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_0"
+      },
+      "measurements": {
+        "convergence_time": [
+          61.27014500114265
+        ],
+        "final_loss": [
+          0.0007268768526249248
+        ],
+        "memory_usage": [
+          492.3669203477777
+        ],
+        "cpu_utilization": [
+          89.38096879577125
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 2.3792489332458513,
+        "skewness": -0.04055297013492684
+      },
+      "performance_metrics": {
+        "convergence_time": 61.27014500114265,
+        "final_loss": 0.0007268768526249248,
+        "efficiency_score": 69.36492749942867,
+        "stability_index": 0.9299642494335073
+      },
+      "success": true,
+      "p_value": 0.16593153742906785,
+      "effect_size": 3.3233890673917763
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.001,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_1"
+      },
+      "measurements": {
+        "convergence_time": [
+          70.27210912893398
+        ],
+        "final_loss": [
+          7.154125633231117e-05
+        ],
+        "memory_usage": [
+          500.1235608207801
+        ],
+        "cpu_utilization": [
+          77.7727133426833
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 2.5617875099506997,
+        "skewness": 0.20964650076179772
+      },
+      "performance_metrics": {
+        "convergence_time": 70.27210912893398,
+        "final_loss": 7.154125633231117e-05,
+        "efficiency_score": 64.86394543553301,
+        "stability_index": 0.834569399212642
+      },
+      "success": true,
+      "p_value": 0.3023892071104209,
+      "effect_size": 1.9192431478435665
+    },
+    {
+      "parameters": {
+        "learning_rate": 0.001,
+        "method": "multi-scale_optimization_with_hierarchical_refinement",
+        "test_case": "case_2"
+      },
+      "measurements": {
+        "convergence_time": [
+          75.46900896917386
+        ],
+        "final_loss": [
+          0.0009659862996221479
+        ],
+        "memory_usage": [
+          477.2314433816317
+        ],
+        "cpu_utilization": [
+          78.88425743943232
+        ]
+      },
+      "statistical_metrics": {
+        "sample_size": 1,
+        "variance": 0.12694688644829655,
+        "skewness": 0.03289623178639709
+      },
+      "performance_metrics": {
+        "convergence_time": 75.46900896917386,
+        "final_loss": 0.0009659862996221479,
+        "efficiency_score": 62.26549551541307,
+        "stability_index": 0.9430746760427844
+      },
+      "success": true,
+      "p_value": 0.1756113939078033,
+      "effect_size": 2.369935679177991
+    }
+  ],
+  "analysis": {
+    "overall_summary": {},
+    "hypothesis_results": {
+      "OPT_HYP_0001": {
+        "sample_size": 30,
+        "convergence_time": {
+          "mean": 77.75399859685167,
+          "std": 16.530414843949888,
+          "median": 73.6062766365039,
+          "ci_95": [
+            53.98351651958621,
+            113.01992763351248
+          ]
+        },
+        "final_loss": {
+          "mean": 0.0007783713842221542,
+          "std": 0.000584128232988113,
+          "median": 0.0007567825436060038,
+          "ci_95": [
+            1.7317378655808406e-05,
+            0.0021068213148636547
+          ]
+        },
+        "success_rate": 1.0,
+        "effect_size": 1.784743385301202,
+        "average_p_value": 0.23376320827640595
+      }
+    },
+    "statistical_significance": {
+      "OPT_HYP_0001": {
+        "statistically_significant": "False",
+        "practically_significant": "True",
+        "confidence_level": 0.95,
+        "power_analysis": 0.95
+      }
+    },
+    "publication_readiness": {
+      "OPT_HYP_0001": {
+        "readiness_score": 0.8333333333333334,
+        "criteria_met": {
+          "statistical_significance": "False",
+          "practical_significance": "True",
+          "adequate_sample_size": true,
+          "effect_size_reported": true,
+          "confidence_intervals": true,
+          "reproducible_methodology": true
+        },
+        "journal_recommendations": [
+          "Nature Communications",
+          "IEEE Transactions on Ultrasonics",
+          "Journal of the Acoustical Society of America"
+        ],
+        "required_improvements": [
+          "Increase sample size for statistical power"
+        ]
+      }
+    },
+    "recommendations": [
+      "Prepare manuscripts for 1 publication-ready findings",
+      "Investigate hybrid approaches combining best-performing methods",
+      "Extend validation to real-world hardware implementations",
+      "Develop theoretical framework explaining observed improvements",
+      "Create benchmark suite for standardized comparison"
+    ]
+  }
+}
