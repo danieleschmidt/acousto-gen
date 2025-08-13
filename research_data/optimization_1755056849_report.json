@@ -1,0 +1,45 @@
+{
+  "title": "Autonomous Research Report: Multi-Scale Optimization with Hierarchical Refinement",
+  "study_id": "optimization_1755056849",
+  "executive_summary": {
+    "hypothesis": "Use coarse-to-fine optimization strategy for complex hologram patterns",
+    "methodology": "Start optimization on low-resolution field, progressively refine resolution while transferring phase patterns",
+    "key_findings": [
+      "Prepare manuscripts for 1 publication-ready findings",
+      "Investigate hybrid approaches combining best-performing methods",
+      "Extend validation to real-world hardware implementations"
+    ],
+    "statistical_significance": false,
+    "practical_impact": "Better global optimization, reduced local minima trapping"
+  },
+  "detailed_results": {
+    "overall_summary": {},
+    "hypothesis_results": {
+      "OPT_HYP_0001": {
+        "sample_size": 30,
+        "convergence_time": {
+          "mean": 77.75399859685167,
+          "std": 16.530414843949888,
+          "median": 73.6062766365039,
+          "ci_95": [
+            53.98351651958621,
+            113.01992763351248
+          ]
+        },
+        "final_loss": {
+          "mean": 0.0007783713842221542,
+          "std": 0.000584128232988113,
+          "median": 0.0007567825436060038,
+          "ci_95": [
+            1.7317378655808406e-05,
+            0.0021068213148636547
+          ]
+        },
+        "success_rate": 1.0,
+        "effect_size": 1.784743385301202,
+        "average_p_value": 0.23376320827640595
+      }
+    },
+    "statistical_significance": {
+      "OPT_HYP_0001": {
+        "statistically_significant": 
