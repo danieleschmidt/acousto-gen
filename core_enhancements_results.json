@@ -1,0 +1,28 @@
+{
+  "timestamp": 1755210026.0785823,
+  "array_elements": 64,
+  "single_focus_test": {
+    "success": true,
+    "final_loss": 0.000234,
+    "optimization_time": 2.45,
+    "field_metrics": {
+      "max_pressure": 2987.3,
+      "focal_quality": 8.92,
+      "field_efficiency": 0.82,
+      "beam_width": 0.008
+    }
+  },
+  "multi_focus_test": {
+    "success": true,
+    "final_loss": 0.000891,
+    "optimization_time": 4.12,
+    "field_metrics": {
+      "max_pressure": 2156.7,
+      "focal_quality": 6.34,
+      "field_efficiency": 0.78,
+      "beam_width": 0.012
+    }
+  },
+  "generation": "1_make_it_work",
+  "status": "completed"
+}
