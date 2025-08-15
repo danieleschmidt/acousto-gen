@@ -415,11 +415,17 @@ class AcousticHologram:
                 print(f"Iteration {iteration}: Loss = {loss_value:.6f}")
         
         # Store optimized phases
-        self.current_phases = phases.detach().cpu().numpy()
+        phases_numpy = phases.detach().cpu().numpy()
+        self.current_phases = phases_numpy
         final_loss = self.optimization_history[-1] if self.optimization_history else 0.0
         
         # Ensure phases are in [0, 2π] range as expected by tests
-        normalized_phases = (self.current_phases % (2 * np.pi))
+        # Handle both numpy arrays and MockArrays
+        if hasattr(phases_numpy, '__mod__'):
+            normalized_phases = phases_numpy % (2 * np.pi)
+        else:
+            # Fallback for lists or other types
+            normalized_phases = np.array([x % (2 * np.pi) for x in phases_numpy])
         
         return {
             'phases': normalized_phases,

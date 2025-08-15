@@ -4,9 +4,11 @@ Provides graceful degradation and demonstration capabilities.
 """
 
 import sys
+import os
 import warnings
 from typing import Any, List, Tuple, Dict, Optional, Union
 import math
+import cmath
 import random
 
 
@@ -23,11 +25,40 @@ class MockArray:
         
         self.dtype = dtype
         self.shape = (len(self.data),) if isinstance(self.data, list) else (1,)
+        self.device = 'cpu'  # Default device
+        self.requires_grad = False  # Default no gradients
     
     def __len__(self):
+        if hasattr(self, 'shape') and len(self.shape) > 1:
+            # For 2D arrays, return the number of rows
+            return self.shape[0]
         return len(self.data)
     
     def __getitem__(self, idx):
+        if hasattr(self, 'shape') and len(self.shape) > 1:
+            # Handle 2D indexing
+            if isinstance(idx, int):
+                # Return a row for 2D arrays
+                if len(self.shape) == 2:
+                    row_size = self.shape[1]
+                    start = idx * row_size
+                    end = start + row_size
+                    row_data = self.data[start:end]
+                    result = MockArray(row_data)
+                    result.shape = (row_size,)
+                    return result
+        
+        # Handle slicing operations
+        if isinstance(idx, slice):
+            sliced_data = self.data[idx]
+            result = MockArray(sliced_data, self.dtype)
+            # Preserve other attributes
+            if hasattr(self, 'device'):
+                result.device = self.device
+            if hasattr(self, 'requires_grad'):
+                result.requires_grad = self.requires_grad
+            return result
+        
         return self.data[idx]
     
     def __setitem__(self, idx, value):
@@ -35,27 +66,166 @@ class MockArray:
     
     def __add__(self, other):
         if isinstance(other, MockArray):
-            return MockArray([a + b for a, b in zip(self.data, other.data)])
-        return MockArray([x + other for x in self.data])
+            result = MockArray([a + b for a, b in zip(self.data, other.data)])
+        else:
+            result = MockArray([x + other for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
     
     def __mul__(self, other):
         if isinstance(other, MockArray):
-            return MockArray([a * b for a, b in zip(self.data, other.data)])
-        return MockArray([x * other for x in self.data])
+            result = MockArray([a * b for a, b in zip(self.data, other.data)])
+        else:
+            result = MockArray([x * other for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
     
     def __sub__(self, other):
         if isinstance(other, MockArray):
-            return MockArray([a - b for a, b in zip(self.data, other.data)])
-        return MockArray([x - other for x in self.data])
+            result = MockArray([a - b for a, b in zip(self.data, other.data)])
+        else:
+            result = MockArray([x - other for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
+    
+    def __pow__(self, other):
+        if isinstance(other, MockArray):
+            result = MockArray([a ** b for a, b in zip(self.data, other.data)])
+        else:
+            result = MockArray([x ** other for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
+    
+    def __radd__(self, other):
+        result = MockArray([other + x for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
+    
+    def __rsub__(self, other):
+        result = MockArray([other - x for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
+    
+    def __rmul__(self, other):
+        result = MockArray([other * x for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
+    
+    def __rtruediv__(self, other):
+        result = MockArray([other / x if x != 0 else 0 for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
+    
+    def __truediv__(self, other):
+        if isinstance(other, MockArray):
+            result = MockArray([a / b if b != 0 else 0 for a, b in zip(self.data, other.data)])
+        else:
+            result = MockArray([x / other if other != 0 else 0 for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
+    
+    def __neg__(self):
+        result = MockArray([-x for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
+    
+    def __pos__(self):
+        result = MockArray([+x for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
+    
+    def __abs__(self):
+        result = MockArray([abs(x) for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
+    
+    def __mod__(self, other):
+        """Modulo operator for phase normalization."""
+        if isinstance(other, MockArray):
+            result = MockArray([a % b for a, b in zip(self.data, other.data)])
+        else:
+            result = MockArray([x % other for x in self.data])
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
     
     def copy(self):
         return MockArray(self.data.copy())
     
+    def astype(self, dtype):
+        # Convert data to specified type
+        if dtype == complex:
+            new_data = [complex(x) if not isinstance(x, complex) else x for x in self.data]
+        else:
+            new_data = [dtype(x) for x in self.data]
+        result = MockArray(new_data)
+        result.shape = self.shape  # Preserve shape
+        return result
+    
     def tolist(self):
         return self.data
     
+    def detach(self):
+        """PyTorch tensor compatibility - detach from computation graph."""
+        result = MockArray(self.data.copy(), self.dtype)
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        if hasattr(self, 'device'):
+            result.device = self.device
+        result.requires_grad = False
+        return result
+    
+    def cpu(self):
+        """PyTorch tensor compatibility - move to CPU."""
+        result = MockArray(self.data.copy(), self.dtype)
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        result.device = 'cpu'
+        if hasattr(self, 'requires_grad'):
+            result.requires_grad = self.requires_grad
+        return result
+    
+    def numpy(self):
+        """PyTorch tensor compatibility - convert to numpy array."""
+        # Return the underlying data as if it were a numpy array
+        if hasattr(self, 'shape') and len(self.shape) > 1:
+            # For 2D arrays, we need to reshape the flat data
+            import numpy as np
+            try:
+                return np.array(self.data).reshape(self.shape)
+            except:
+                # Fallback if numpy is not available (in mock mode)
+                return self
+        return self.data
+    
+    def backward(self):
+        """PyTorch tensor compatibility - backward pass for gradient computation."""
+        # In mock mode, this is a no-op
+        pass
+    
+    def item(self):
+        """PyTorch tensor compatibility - get scalar value."""
+        if self.data:
+            return self.data[0] if isinstance(self.data[0], (int, float, complex)) else float(self.data[0])
+        return 0.0
+    
     def astype(self, dtype):
-        return MockArray(self.data, dtype=dtype)
+        result = MockArray(self.data, dtype=dtype)
+        if hasattr(self, 'shape'):
+            result.shape = self.shape
+        return result
     
     @property
     def size(self):
@@ -67,6 +237,14 @@ class MockNumpy:
     
     @staticmethod
     def array(data, dtype=None):
+        if isinstance(data, list) and len(data) > 0 and isinstance(data[0], list):
+            # Handle 2D arrays
+            rows = len(data)
+            cols = len(data[0]) if rows > 0 else 0
+            flat_data = [item for row in data for item in row]  # Flatten
+            result = MockArray(flat_data, dtype)
+            result.shape = (rows, cols)
+            return result
         return MockArray(data, dtype)
     
     @staticmethod
@@ -96,16 +274,90 @@ class MockNumpy:
         step = (stop - start) / (num - 1)
         return MockArray([start + i * step for i in range(num)])
     
+    # Add FFT module
+    class fft:
+        @staticmethod
+        def fft(x, n=None, axis=-1, norm=None):
+            if isinstance(x, MockArray):
+                # Simple mock FFT that returns complex result
+                result_data = [complex(val, val*0.1) for val in x.data]
+                return MockArray(result_data)
+            return MockArray([complex(x, x*0.1)])
+        
+        @staticmethod
+        def ifft(x, n=None, axis=-1, norm=None):
+            if isinstance(x, MockArray):
+                # Simple mock inverse FFT
+                result_data = [val.real if hasattr(val, 'real') else val for val in x.data]
+                return MockArray(result_data)
+            return MockArray([x.real if hasattr(x, 'real') else x])
+        
+        @staticmethod
+        def fft2(x, s=None, axes=(-2, -1), norm=None):
+            return MockNumpy.fft.fft(x)
+        
+        @staticmethod
+        def ifft2(x, s=None, axes=(-2, -1), norm=None):
+            return MockNumpy.fft.ifft(x)
+        
+        @staticmethod
+        def fftn(x, s=None, axes=None, norm=None):
+            return MockNumpy.fft.fft(x)
+        
+        @staticmethod
+        def ifftn(x, s=None, axes=None, norm=None):
+            return MockNumpy.fft.ifft(x)
+        
+        @staticmethod
+        def fftfreq(n, d=1.0):
+            return MockArray([i/n/d for i in range(n)])
+        
+        @staticmethod
+        def fftshift(x, axes=None):
+            return x
+        
+        @staticmethod
+        def ifftshift(x, axes=None):
+            return x
+    
     @staticmethod
-    def meshgrid(x, y, z, indexing='ij'):
-        # Simplified meshgrid
-        return MockArray([0] * 10), MockArray([0] * 10), MockArray([0] * 10)
+    def linspace_complete(start, stop, num):
+        step = (stop - start) / (num - 1)
+        return MockArray([start + i * step for i in range(num)])
+    
+    @staticmethod
+    def meshgrid(*arrays, indexing='ij'):
+        # Simplified meshgrid - return mock arrays based on input count
+        # Return arrays matching the shape expected by acoustic computations
+        size = 100  # Reasonable grid size for mock
+        if len(arrays) == 2:
+            return MockArray([0] * size), MockArray([0] * size)
+        elif len(arrays) == 3:
+            # Create proper 3D meshgrid data
+            nx, ny, nz = len(arrays[0].data), len(arrays[1].data), len(arrays[2].data)
+            grid_shape = (nx, ny, nz)
+            total_size = nx * ny * nz
+            
+            # Create proper meshgrid data 
+            X = MockArray([arrays[0].data[i % nx] for i in range(total_size)])
+            Y = MockArray([arrays[1].data[(i // nx) % ny] for i in range(total_size)])
+            Z = MockArray([arrays[2].data[i // (nx * ny)] for i in range(total_size)])
+            
+            X.shape = grid_shape
+            Y.shape = grid_shape  
+            Z.shape = grid_shape
+            return X, Y, Z
+        else:
+            return tuple(MockArray([0] * size) for _ in arrays)
     
     @staticmethod
     def exp(x):
         if hasattr(x, 'data'):
-            return MockArray([math.exp(val) for val in x.data])
-        return math.exp(x)
+            result = MockArray([cmath.exp(val) if isinstance(val, complex) else math.exp(val) for val in x.data])
+            if hasattr(x, 'shape'):
+                result.shape = x.shape  # Preserve shape
+            return result
+        return cmath.exp(x) if isinstance(x, complex) else math.exp(x)
     
     @staticmethod
     def sin(x):
@@ -122,8 +374,8 @@ class MockNumpy:
     @staticmethod
     def sqrt(x):
         if hasattr(x, 'data'):
-            return MockArray([math.sqrt(val) for val in x.data])
-        return math.sqrt(x)
+            return MockArray([cmath.sqrt(val) if isinstance(val, complex) else math.sqrt(abs(val)) for val in x.data])
+        return cmath.sqrt(x) if isinstance(x, complex) else math.sqrt(abs(x))
     
     @staticmethod
     def abs(x):
@@ -234,7 +486,30 @@ class MockTorch:
     
     @staticmethod
     def tensor(data, dtype=None, device='cpu'):
-        return MockTensor(data, dtype, device)
+        # Handle conversion from MockArray to tensor with proper shape preservation
+        if hasattr(data, 'data') and hasattr(data, 'shape'):
+            # It's a MockArray, preserve its structure
+            result = MockArray(data.data, dtype)
+            result.shape = data.shape
+            result.device = device
+            result.requires_grad = False
+            return result
+        elif isinstance(data, list) and len(data) > 0 and isinstance(data[0], list):
+            # Handle 2D arrays directly
+            rows = len(data)
+            cols = len(data[0]) if rows > 0 else 0
+            flat_data = [item for row in data for item in row]  # Flatten
+            result = MockArray(flat_data, dtype)
+            result.shape = (rows, cols)
+            result.device = device
+            result.requires_grad = False
+            return result
+        else:
+            # Handle 1D arrays and scalars
+            result = MockArray(data, dtype)
+            result.device = device
+            result.requires_grad = False
+            return result
     
     @staticmethod
     def zeros(size, dtype=None, device='cpu'):
@@ -244,7 +519,10 @@ class MockTorch:
             for dim in size:
                 total_size *= dim
             size = total_size
-        return MockTensor([0] * size, dtype, device)
+        result = MockArray([0] * size, dtype)
+        result.device = device
+        result.requires_grad = False
+        return result
     
     @staticmethod
     def ones(size, dtype=None, device='cpu'):
@@ -254,7 +532,10 @@ class MockTorch:
             for dim in size:
                 total_size *= dim
             size = total_size
-        return MockTensor([1] * size, dtype, device)
+        result = MockArray([1] * size, dtype)
+        result.device = device
+        result.requires_grad = False
+        return result
     
     @staticmethod
     def randn(size, requires_grad=False, device='cpu'):
@@ -265,9 +546,10 @@ class MockTorch:
                 total_size *= dim
             size = total_size
         data = [random.gauss(0, 1) for _ in range(size)]
-        tensor = MockTensor(data, device=device)
-        tensor.requires_grad = requires_grad
-        return tensor
+        result = MockArray(data)
+        result.device = device
+        result.requires_grad = requires_grad
+        return result
     
     @staticmethod
     def device(name):
@@ -299,53 +581,53 @@ class MockTorch:
     @staticmethod
     def mean(input_tensor, dim=None):
         if hasattr(input_tensor, 'data'):
-            return MockTensor([sum(input_tensor.data) / len(input_tensor.data)])
+            return MockArray([sum(input_tensor.data) / len(input_tensor.data)])
         return input_tensor
     
     @staticmethod
     def sum(input_tensor, dim=None):
         if hasattr(input_tensor, 'data'):
-            return MockTensor([sum(input_tensor.data)])
+            return MockArray([sum(input_tensor.data)])
         return input_tensor
     
     @staticmethod
     def abs(input_tensor):
         if hasattr(input_tensor, 'data'):
-            return MockTensor([abs(x) for x in input_tensor.data])
+            return MockArray([abs(x) for x in input_tensor.data])
         return abs(input_tensor)
     
     @staticmethod
     def sqrt(input_tensor):
         if hasattr(input_tensor, 'data'):
-            return MockTensor([math.sqrt(abs(x)) for x in input_tensor.data])
-        return math.sqrt(abs(input_tensor))
+            return MockArray([cmath.sqrt(x) if isinstance(x, complex) else math.sqrt(abs(x)) for x in input_tensor.data])
+        return cmath.sqrt(input_tensor) if isinstance(input_tensor, complex) else math.sqrt(abs(input_tensor))
     
     @staticmethod
     def exp(input_tensor):
         if hasattr(input_tensor, 'data'):
-            return MockTensor([math.exp(x) for x in input_tensor.data])
-        return math.exp(input_tensor)
+            return MockArray([cmath.exp(x) if isinstance(x, complex) else math.exp(x) for x in input_tensor.data])
+        return cmath.exp(input_tensor) if isinstance(input_tensor, complex) else math.exp(input_tensor)
     
     @staticmethod
     def sin(input_tensor):
         if hasattr(input_tensor, 'data'):
-            return MockTensor([math.sin(x) for x in input_tensor.data])
-        return math.sin(input_tensor)
+            return MockArray([cmath.sin(x) if isinstance(x, complex) else math.sin(x) for x in input_tensor.data])
+        return cmath.sin(input_tensor) if isinstance(input_tensor, complex) else math.sin(input_tensor)
     
     @staticmethod
     def cos(input_tensor):
         if hasattr(input_tensor, 'data'):
-            return MockTensor([math.cos(x) for x in input_tensor.data])
-        return math.cos(input_tensor)
+            return MockArray([cmath.cos(x) if isinstance(x, complex) else math.cos(x) for x in input_tensor.data])
+        return cmath.cos(input_tensor) if isinstance(input_tensor, complex) else math.cos(input_tensor)
     
     @staticmethod
     def maximum(a, b):
         if hasattr(a, 'data') and hasattr(b, 'data'):
-            return MockTensor([max(x, y) for x, y in zip(a.data, b.data)])
+            return MockArray([max(x, y) for x, y in zip(a.data, b.data)])
         elif hasattr(a, 'data'):
-            return MockTensor([max(x, b) for x in a.data])
+            return MockArray([max(x, b) for x in a.data])
         elif hasattr(b, 'data'):
-            return MockTensor([max(a, x) for x in b.data])
+            return MockArray([max(a, x) for x in b.data])
         return max(a, b)
     
     # Dtypes
@@ -383,7 +665,7 @@ class MockTorch:
             
             @staticmethod
             def mse_loss(pred, target):
-                return MockTensor([0.5])
+                return MockArray([0.5])
         
         class Parameter:
             def __init__(self, data):
@@ -594,7 +876,7 @@ class MockLoss:
     """Mock loss function."""
     
     def __call__(self, pred, target):
-        return MockTensor([0.5])  # Dummy loss
+        return MockArray([0.5])  # Dummy loss
 
 
 def setup_mock_dependencies():
@@ -651,6 +933,20 @@ def setup_mock_dependencies():
         sys.modules['scipy.ndimage'] = MockScipy.ndimage
         sys.modules['scipy.spatial'] = MockScipy.spatial
         sys.modules['scipy.optimize'] = MockScipy.optimize
+        
+        # Mock h5py
+        class MockH5py:
+            class File:
+                def __init__(self, *args, **kwargs):
+                    pass
+                def __enter__(self):
+                    return self
+                def __exit__(self, *args):
+                    pass
+                def create_dataset(self, *args, **kwargs):
+                    return MockArray([0])
+        
+        sys.modules['h5py'] = MockH5py()
     
     # Issue warning
     warnings.warn(
@@ -665,6 +961,12 @@ def setup_mock_dependencies():
 
 def check_and_setup():
     """Check dependencies and setup mocks if needed."""
+    # Force mock mode if environment variable is set
+    if os.environ.get('ACOUSTO_GEN_FORCE_MOCK'):
+        print("🔧 Force mock mode enabled via environment variable")
+        setup_mock_dependencies()
+        return False
+        
     missing = []
     
     try:
