@@ -59,6 +59,76 @@ except ImportError:
         'LayerNorm': MockModule,
     })()
     
+    # Mock Dataset class
+    class Dataset:
+        def __init__(self):
+            pass
+        def __len__(self):
+            return 0
+        def __getitem__(self, idx):
+            return None
+    
+    # Mock DataLoader
+    class DataLoader:
+        def __init__(self, dataset, batch_size=1, shuffle=False):
+            self.dataset = dataset
+            self.batch_size = batch_size
+        def __iter__(self):
+            return iter([])
+    
+    # Mock torch functions
+    class MockTorch:
+        @staticmethod
+        def randn(*args, **kwargs):
+            return np.random.randn(*args)
+        @staticmethod
+        def tensor(data, **kwargs):
+            return np.array(data)
+        @staticmethod
+        def FloatTensor(data):
+            return np.array(data, dtype=np.float32)
+        @staticmethod
+        def stack(tensors, dim=0):
+            return np.stack(tensors, axis=dim)
+        @staticmethod
+        def cat(tensors, dim=0):
+            return np.concatenate(tensors, axis=dim)
+        @staticmethod
+        def complex(real, imag):
+            return real + 1j * imag
+        @staticmethod
+        def save(obj, path):
+            pass
+        @staticmethod
+        def load(path):
+            return {}
+        @staticmethod
+        def exp(x):
+            return np.exp(x)
+        @staticmethod
+        def randn_like(x):
+            return np.random.randn(*x.shape)
+        @staticmethod
+        def randint(low, high, size):
+            return np.random.randint(low, high, size)
+        @staticmethod
+        def rand(*args):
+            return np.random.rand(*args)
+    
+    torch = MockTorch()
+    
+    # Mock optim
+    class MockOptim:
+        class Adam:
+            def __init__(self, params, lr=0.001):
+                self.lr = lr
+            def zero_grad(self):
+                pass
+            def step(self):
+                pass
+    
+    optim = MockOptim()
+    
     F = type('MockF', (), {
         'mse_loss': lambda x, y: 0.0,
         'l1_loss': lambda x, y: 0.0,
