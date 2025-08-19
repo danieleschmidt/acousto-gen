@@ -1,136 +1,19 @@
 {
   "summary": {
-    "total_files_scanned": 33,
-    "total_issues_found": 18,
-    "high_severity_issues": 15,
-    "medium_severity_issues": 3,
+    "total_files_scanned": 65,
+    "total_issues_found": 81,
+    "high_severity_issues": 33,
+    "medium_severity_issues": 48,
     "low_severity_issues": 0,
     "issues_by_category": {
-      "command_injection": 6,
-      "unsafe_deserialization": 8,
-      "weak_crypto": 3,
-      "hardcoded_secrets": 1
+      "weak_crypto": 48,
+      "unsafe_deserialization": 16,
+      "command_injection": 14,
+      "hardcoded_secrets": 3
     },
     "scan_timestamp": "/root/repo"
   },
   "high_severity_findings": [
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 218,
-      "category": "command_injection",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Potential command injection vulnerability"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 239,
-      "category": "command_injection",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Potential command injection vulnerability"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 495,
-      "category": "command_injection",
-      "pattern": "eval\\s*\\(",
-      "content": "self.model.eval()",
-      "severity": "HIGH",
-      "description": "Potential command injection vulnerability"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 610,
-      "category": "command_injection",
-      "pattern": "eval\\s*\\(",
-      "content": "self.model.eval()",
-      "severity": "HIGH",
-      "description": "Potential command injection vulnerability"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 218,
-      "category": "unsafe_deserialization",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Unsafe deserialization detected"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 239,
-      "category": "unsafe_deserialization",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Unsafe deserialization detected"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 495,
-      "category": "unsafe_deserialization",
-      "pattern": "eval\\s*\\(",
-      "content": "self.model.eval()",
-      "severity": "HIGH",
-      "description": "Unsafe deserialization detected"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 610,
-      "category": "unsafe_deserialization",
-      "pattern": "eval\\s*\\(",
-      "content": "self.model.eval()",
-      "severity": "HIGH",
-      "description": "Unsafe deserialization detected"
-    },
-    {
-      "file": "src/optimization/hologram_optimizer.py",
-      "line": 477,
-      "category": "command_injection",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Potential command injection vulnerability"
-    },
-    {
-      "file": "src/optimization/hologram_optimizer.py",
-      "line": 518,
-      "category": "command_injection",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Potential command injection vulnerability"
-    },
-    {
-      "file": "src/optimization/hologram_optimizer.py",
-      "line": 477,
-      "category": "unsafe_deserialization",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Unsafe deserialization detected"
-    },
-    {
-      "file": "src/optimization/hologram_optimizer.py",
-      "line": 518,
-      "category": "unsafe_deserialization",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Unsafe deserialization detected"
-    },
-    {
-      "file": "src/security/access_control.py",
-      "line": 229,
-      "category": "hardcoded_secrets",
-      "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
-      "content": "admin_password = \"admin123\"  # In production, this should be randomly generated",
-      "severity": "HIGH",
-      "description": "Hardcoded credentials or secrets found"
-    },
     {
       "file": "src/distributed/cluster_manager.py",
       "line": 359,
@@ -148,12 +31,345 @@
       "content": "return pickle.loads(bytes.fromhex(job_dict['result']))",
       "severity": "HIGH",
       "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 253,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 274,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 530,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 645,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 253,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 274,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 530,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 645,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/cache.py",
+      "line": 459,
+      "category": "unsafe_deserialization",
+      "pattern": "pickle\\.loads\\s*\\(",
+      "content": "result = pickle.loads(serialized)",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 510,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 551,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 510,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 551,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 36,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "def eval(self):",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 818,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 850,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 881,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 917,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 36,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "def eval(self):",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 818,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 850,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 881,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 917,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/performance/gpu_acceleration_engine.py",
+      "line": 312,
+      "category": "command_injection",
+      "pattern": "exec\\s*\\(",
+      "content": "exec(kernel_code, globals())",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 172,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 172,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/security/advanced_security_framework.py",
+      "line": 790,
+      "category": "hardcoded_secrets",
+      "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+      "content": "password='secure_password123',",
+      "severity": "HIGH",
+      "description": "Hardcoded credentials or secrets found"
+    },
+    {
+      "file": "src/security/advanced_security_framework.py",
+      "line": 39,
+      "category": "hardcoded_secrets",
+      "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+      "content": "SECRET = \"secret\"",
+      "severity": "HIGH",
+      "description": "Hardcoded credentials or secrets found"
+    },
+    {
+      "file": "src/security/advanced_security_framework.py",
+      "line": 40,
+      "category": "hardcoded_secrets",
+      "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+      "content": "TOP_SECRET = \"top_secret\"",
+      "severity": "HIGH",
+      "description": "Hardcoded credentials or secrets found"
+    },
+    {
+      "file": "acousto_gen/mock_backend.py",
+      "line": 655,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "def eval(self):",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "acousto_gen/mock_backend.py",
+      "line": 655,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "def eval(self):",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
     }
   ],
   "medium_severity_findings": [
     {
+      "file": "src/reliability_system.py",
+      "line": 308,
+      "category": "weak_crypto",
+      "pattern": "hashlib\\.md5",
+      "content": "return hashlib.md5(content.encode()).hexdigest()[:8]",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/infrastructure/auto_scaling.py",
+      "line": 593,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if random.random() < 0.05:  # 5% failure rate",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/infrastructure/auto_scaling_orchestrator.py",
+      "line": 619,
+      "category": "weak_crypto",
+      "pattern": "random\\.randint\\(",
+      "content": "task_count = np.random.randint(0, 10)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/monitoring/health_checks.py",
+      "line": 579,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "test_array = np.random.random(256)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/generation4_ai_integration.py",
+      "line": 891,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "return np.random.random((32, 32, 32)) * np.mean(np.abs(phases))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/generation4_ai_integration.py",
+      "line": 893,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target = np.random.random((32, 32, 32))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
       "file": "src/optimization/hologram_optimizer.py",
-      "line": 243,
+      "line": 276,
       "category": "weak_crypto",
       "pattern": "random\\.random\\(",
       "content": "if np.random.random() < self.crossover_rate:",
@@ -162,7 +378,7 @@
     },
     {
       "file": "src/optimization/hologram_optimizer.py",
-      "line": 244,
+      "line": 277,
       "category": "weak_crypto",
       "pattern": "random\\.random\\(",
       "content": "mask = np.random.random(self.num_elements) < 0.5",
@@ -171,10 +387,361 @@
     },
     {
       "file": "src/optimization/hologram_optimizer.py",
-      "line": 254,
+      "line": 287,
       "category": "weak_crypto",
       "pattern": "random\\.random\\(",
       "content": "mask = np.random.random(self.num_elements) < self.mutation_rate",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 614,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "'final_loss': np.random.random() * 0.01,",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 113,
+      "category": "weak_crypto",
+      "pattern": "random\\.randint\\(",
+      "content": "return np.random.randint(low, high, size)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/performance/gpu_acceleration_engine.py",
+      "line": 757,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target_field = np.random.random(size) + 1j * np.random.random(size)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/performance/gpu_acceleration_engine.py",
+      "line": 757,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target_field = np.random.random(size) + 1j * np.random.random(size)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/performance/gpu_acceleration_engine.py",
+      "line": 835,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target_field = np.random.random(num_points) + 1j * np.random.random(num_points)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/performance/gpu_acceleration_engine.py",
+      "line": 835,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target_field = np.random.random(num_points) + 1j * np.random.random(num_points)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/comprehensive_error_handling.py",
+      "line": 204,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "delay *= (0.5 + 0.5 * np.random.random())",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/comprehensive_error_handling.py",
+      "line": 310,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "test_phases = np.random.random(10)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/comprehensive_error_handling.py",
+      "line": 761,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < 0.2:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/comprehensive_error_handling.py",
+      "line": 766,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "'final_loss': np.random.random() * 0.01,",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/comprehensive_error_handling.py",
+      "line": 779,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target = np.random.random((32, 32, 32))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/comprehensive_error_handling.py",
+      "line": 782,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "return np.random.random((32, 32, 32)) * np.mean(np.abs(p))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/error_recovery.py",
+      "line": 394,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "delay *= (0.5 + random.random() * 0.5)  # Add jitter",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 155,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "return np.random.random()  # Mock score",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 234,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "'regularization': 0.1 * np.random.random(),",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 265,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "return np.random.random()",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 289,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < self.epsilon:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 578,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < mutation_rate:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 708,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if delta_energy < 0 or np.random.random() < np.exp(-delta_energy / temperature):",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 995,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "return np.random.random((32, 32, 32)) * np.mean(np.abs(phases))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 998,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target = np.random.random((32, 32, 32))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/quantum_hologram_optimizer.py",
+      "line": 96,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "tunnel_mask = (np.random.random(len(new_phases)) < self.tunnel_probability) & flat_regions",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/quantum_hologram_optimizer.py",
+      "line": 254,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < 0.3:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/quantum_hologram_optimizer.py",
+      "line": 259,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < 0.5:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/quantum_hologram_optimizer.py",
+      "line": 261,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < 0.3:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/quantum_hologram_optimizer.py",
+      "line": 278,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < prob:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/quantum_hologram_optimizer.py",
+      "line": 581,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target = np.random.random(2) * 1000  # Mock target field",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_computing_engine.py",
+      "line": 417,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "field = np.random.random(target_field.shape) * np.mean(np.abs(current_phases))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_computing_engine.py",
+      "line": 462,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "field_plus = np.random.random(target_field.shape) * np.mean(np.abs(phases_plus))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_computing_engine.py",
+      "line": 463,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "field_base = np.random.random(target_field.shape) * np.mean(np.abs(phases))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_computing_engine.py",
+      "line": 477,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "field = np.random.random(target_field.shape) * np.mean(np.abs(phases))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_computing_engine.py",
+      "line": 853,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target_field = np.random.random((32, 32, 32))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_optimization.py",
+      "line": 928,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target_field = np.random.random((32, 32, 32))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_optimization.py",
+      "line": 507,
+      "category": "weak_crypto",
+      "pattern": "random\\.randint\\(",
+      "content": "iterations = np.random.randint(50, 500)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_optimization.py",
+      "line": 539,
+      "category": "weak_crypto",
+      "pattern": "random\\.randint\\(",
+      "content": "iterations = np.random.randint(30, 300)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_optimization.py",
+      "line": 570,
+      "category": "weak_crypto",
+      "pattern": "random\\.randint\\(",
+      "content": "iterations = np.random.randint(100, 800)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/security/advanced_security_framework.py",
+      "line": 781,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "'final_loss': np.random.random() * 0.01,",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/security/advanced_security_framework.py",
+      "line": 804,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target = np.random.random((16, 16, 16)) * 3000  # Safe pressure levels",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/security/advanced_security_framework.py",
+      "line": 820,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "unsafe_target = np.random.random((16, 16, 16)) * 10000  # Unsafe pressure",
       "severity": "MEDIUM",
       "description": "Weak cryptographic function usage"
     }
@@ -182,148 +749,13 @@
   "low_severity_findings": [],
   "all_findings": [
     {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 218,
-      "category": "command_injection",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Potential command injection vulnerability"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 239,
-      "category": "command_injection",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Potential command injection vulnerability"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 495,
-      "category": "command_injection",
-      "pattern": "eval\\s*\\(",
-      "content": "self.model.eval()",
-      "severity": "HIGH",
-      "description": "Potential command injection vulnerability"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 610,
-      "category": "command_injection",
-      "pattern": "eval\\s*\\(",
-      "content": "self.model.eval()",
-      "severity": "HIGH",
-      "description": "Potential command injection vulnerability"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 218,
-      "category": "unsafe_deserialization",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Unsafe deserialization detected"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 239,
-      "category": "unsafe_deserialization",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Unsafe deserialization detected"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 495,
-      "category": "unsafe_deserialization",
-      "pattern": "eval\\s*\\(",
-      "content": "self.model.eval()",
-      "severity": "HIGH",
-      "description": "Unsafe deserialization detected"
-    },
-    {
-      "file": "src/models/neural_hologram_generator.py",
-      "line": 610,
-      "category": "unsafe_deserialization",
-      "pattern": "eval\\s*\\(",
-      "content": "self.model.eval()",
-      "severity": "HIGH",
-      "description": "Unsafe deserialization detected"
-    },
-    {
-      "file": "src/optimization/hologram_optimizer.py",
-      "line": 477,
-      "category": "command_injection",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Potential command injection vulnerability"
-    },
-    {
-      "file": "src/optimization/hologram_optimizer.py",
-      "line": 518,
-      "category": "command_injection",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Potential command injection vulnerability"
-    },
-    {
-      "file": "src/optimization/hologram_optimizer.py",
-      "line": 477,
-      "category": "unsafe_deserialization",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Unsafe deserialization detected"
-    },
-    {
-      "file": "src/optimization/hologram_optimizer.py",
-      "line": 518,
-      "category": "unsafe_deserialization",
-      "pattern": "eval\\s*\\(",
-      "content": "self.eval()",
-      "severity": "HIGH",
-      "description": "Unsafe deserialization detected"
-    },
-    {
-      "file": "src/optimization/hologram_optimizer.py",
-      "line": 243,
+      "file": "src/reliability_system.py",
+      "line": 308,
       "category": "weak_crypto",
-      "pattern": "random\\.random\\(",
-      "content": "if np.random.random() < self.crossover_rate:",
+      "pattern": "hashlib\\.md5",
+      "content": "return hashlib.md5(content.encode()).hexdigest()[:8]",
       "severity": "MEDIUM",
       "description": "Weak cryptographic function usage"
-    },
-    {
-      "file": "src/optimization/hologram_optimizer.py",
-      "line": 244,
-      "category": "weak_crypto",
-      "pattern": "random\\.random\\(",
-      "content": "mask = np.random.random(self.num_elements) < 0.5",
-      "severity": "MEDIUM",
-      "description": "Weak cryptographic function usage"
-    },
-    {
-      "file": "src/optimization/hologram_optimizer.py",
-      "line": 254,
-      "category": "weak_crypto",
-      "pattern": "random\\.random\\(",
-      "content": "mask = np.random.random(self.num_elements) < self.mutation_rate",
-      "severity": "MEDIUM",
-      "description": "Weak cryptographic function usage"
-    },
-    {
-      "file": "src/security/access_control.py",
-      "line": 229,
-      "category": "hardcoded_secrets",
-      "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
-      "content": "admin_password = \"admin123\"  # In production, this should be randomly generated",
-      "severity": "HIGH",
-      "description": "Hardcoded credentials or secrets found"
     },
     {
       "file": "src/distributed/cluster_manager.py",
@@ -340,6 +772,708 @@
       "category": "unsafe_deserialization",
       "pattern": "pickle\\.loads\\s*\\(",
       "content": "return pickle.loads(bytes.fromhex(job_dict['result']))",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/infrastructure/auto_scaling.py",
+      "line": 593,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if random.random() < 0.05:  # 5% failure rate",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/infrastructure/auto_scaling_orchestrator.py",
+      "line": 619,
+      "category": "weak_crypto",
+      "pattern": "random\\.randint\\(",
+      "content": "task_count = np.random.randint(0, 10)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 253,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 274,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 530,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 645,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 253,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 274,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 530,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/models/neural_hologram_generator.py",
+      "line": 645,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/monitoring/health_checks.py",
+      "line": 579,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "test_array = np.random.random(256)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/cache.py",
+      "line": 459,
+      "category": "unsafe_deserialization",
+      "pattern": "pickle\\.loads\\s*\\(",
+      "content": "result = pickle.loads(serialized)",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/generation4_ai_integration.py",
+      "line": 891,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "return np.random.random((32, 32, 32)) * np.mean(np.abs(phases))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/generation4_ai_integration.py",
+      "line": 893,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target = np.random.random((32, 32, 32))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 510,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 551,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 510,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 551,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "self.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 276,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < self.crossover_rate:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 277,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "mask = np.random.random(self.num_elements) < 0.5",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/hologram_optimizer.py",
+      "line": 287,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "mask = np.random.random(self.num_elements) < self.mutation_rate",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 36,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "def eval(self):",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 818,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 850,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 881,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 917,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 36,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "def eval(self):",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 818,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 850,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 881,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 917,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 614,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "'final_loss': np.random.random() * 0.01,",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/optimization/neural_hologram_synthesis.py",
+      "line": 113,
+      "category": "weak_crypto",
+      "pattern": "random\\.randint\\(",
+      "content": "return np.random.randint(low, high, size)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/performance/gpu_acceleration_engine.py",
+      "line": 312,
+      "category": "command_injection",
+      "pattern": "exec\\s*\\(",
+      "content": "exec(kernel_code, globals())",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/performance/gpu_acceleration_engine.py",
+      "line": 757,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target_field = np.random.random(size) + 1j * np.random.random(size)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/performance/gpu_acceleration_engine.py",
+      "line": 757,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target_field = np.random.random(size) + 1j * np.random.random(size)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/performance/gpu_acceleration_engine.py",
+      "line": 835,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target_field = np.random.random(num_points) + 1j * np.random.random(num_points)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/performance/gpu_acceleration_engine.py",
+      "line": 835,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target_field = np.random.random(num_points) + 1j * np.random.random(num_points)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/comprehensive_error_handling.py",
+      "line": 204,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "delay *= (0.5 + 0.5 * np.random.random())",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/comprehensive_error_handling.py",
+      "line": 310,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "test_phases = np.random.random(10)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/comprehensive_error_handling.py",
+      "line": 761,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < 0.2:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/comprehensive_error_handling.py",
+      "line": 766,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "'final_loss': np.random.random() * 0.01,",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/comprehensive_error_handling.py",
+      "line": 779,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target = np.random.random((32, 32, 32))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/comprehensive_error_handling.py",
+      "line": 782,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "return np.random.random((32, 32, 32)) * np.mean(np.abs(p))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/reliability/error_recovery.py",
+      "line": 394,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "delay *= (0.5 + random.random() * 0.5)  # Add jitter",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 172,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 172,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "model.eval()",
+      "severity": "HIGH",
+      "description": "Unsafe deserialization detected"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 155,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "return np.random.random()  # Mock score",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 234,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "'regularization': 0.1 * np.random.random(),",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 265,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "return np.random.random()",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 289,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < self.epsilon:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 578,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < mutation_rate:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 708,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if delta_energy < 0 or np.random.random() < np.exp(-delta_energy / temperature):",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 995,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "return np.random.random((32, 32, 32)) * np.mean(np.abs(phases))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/adaptive_ai_optimizer.py",
+      "line": 998,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target = np.random.random((32, 32, 32))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/quantum_hologram_optimizer.py",
+      "line": 96,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "tunnel_mask = (np.random.random(len(new_phases)) < self.tunnel_probability) & flat_regions",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/quantum_hologram_optimizer.py",
+      "line": 254,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < 0.3:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/quantum_hologram_optimizer.py",
+      "line": 259,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < 0.5:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/quantum_hologram_optimizer.py",
+      "line": 261,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < 0.3:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/quantum_hologram_optimizer.py",
+      "line": 278,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "if np.random.random() < prob:",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/research/quantum_hologram_optimizer.py",
+      "line": 581,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target = np.random.random(2) * 1000  # Mock target field",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_computing_engine.py",
+      "line": 417,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "field = np.random.random(target_field.shape) * np.mean(np.abs(current_phases))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_computing_engine.py",
+      "line": 462,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "field_plus = np.random.random(target_field.shape) * np.mean(np.abs(phases_plus))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_computing_engine.py",
+      "line": 463,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "field_base = np.random.random(target_field.shape) * np.mean(np.abs(phases))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_computing_engine.py",
+      "line": 477,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "field = np.random.random(target_field.shape) * np.mean(np.abs(phases))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_computing_engine.py",
+      "line": 853,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target_field = np.random.random((32, 32, 32))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_optimization.py",
+      "line": 928,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target_field = np.random.random((32, 32, 32))",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_optimization.py",
+      "line": 507,
+      "category": "weak_crypto",
+      "pattern": "random\\.randint\\(",
+      "content": "iterations = np.random.randint(50, 500)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_optimization.py",
+      "line": 539,
+      "category": "weak_crypto",
+      "pattern": "random\\.randint\\(",
+      "content": "iterations = np.random.randint(30, 300)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/scalability/distributed_optimization.py",
+      "line": 570,
+      "category": "weak_crypto",
+      "pattern": "random\\.randint\\(",
+      "content": "iterations = np.random.randint(100, 800)",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/security/advanced_security_framework.py",
+      "line": 790,
+      "category": "hardcoded_secrets",
+      "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+      "content": "password='secure_password123',",
+      "severity": "HIGH",
+      "description": "Hardcoded credentials or secrets found"
+    },
+    {
+      "file": "src/security/advanced_security_framework.py",
+      "line": 39,
+      "category": "hardcoded_secrets",
+      "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+      "content": "SECRET = \"secret\"",
+      "severity": "HIGH",
+      "description": "Hardcoded credentials or secrets found"
+    },
+    {
+      "file": "src/security/advanced_security_framework.py",
+      "line": 40,
+      "category": "hardcoded_secrets",
+      "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+      "content": "TOP_SECRET = \"top_secret\"",
+      "severity": "HIGH",
+      "description": "Hardcoded credentials or secrets found"
+    },
+    {
+      "file": "src/security/advanced_security_framework.py",
+      "line": 781,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "'final_loss': np.random.random() * 0.01,",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/security/advanced_security_framework.py",
+      "line": 804,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "target = np.random.random((16, 16, 16)) * 3000  # Safe pressure levels",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "src/security/advanced_security_framework.py",
+      "line": 820,
+      "category": "weak_crypto",
+      "pattern": "random\\.random\\(",
+      "content": "unsafe_target = np.random.random((16, 16, 16)) * 10000  # Unsafe pressure",
+      "severity": "MEDIUM",
+      "description": "Weak cryptographic function usage"
+    },
+    {
+      "file": "acousto_gen/mock_backend.py",
+      "line": 655,
+      "category": "command_injection",
+      "pattern": "eval\\s*\\(",
+      "content": "def eval(self):",
+      "severity": "HIGH",
+      "description": "Potential command injection vulnerability"
+    },
+    {
+      "file": "acousto_gen/mock_backend.py",
+      "line": 655,
+      "category": "unsafe_deserialization",
+      "pattern": "eval\\s*\\(",
+      "content": "def eval(self):",
       "severity": "HIGH",
       "description": "Unsafe deserialization detected"
     }
