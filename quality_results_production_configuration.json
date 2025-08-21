@@ -1,0 +1,155 @@
+{
+  "overall_score": 0.8507449366569019,
+  "gates_passed": 3,
+  "gates_failed": 3,
+  "gates_warned": 0,
+  "critical_failures": [
+    "Security"
+  ],
+  "execution_time": 5.90542197227478,
+  "production_ready": false,
+  "timestamp": 1755739707.2261417,
+  "results": [
+    {
+      "gate_name": "Performance",
+      "status": "failed",
+      "score": 0.8433385827674695,
+      "threshold": 0.85,
+      "execution_time": 0.3003356456756592,
+      "criticality": "high",
+      "details": {
+        "optimization_speed": 0.9335103481805987,
+        "memory_efficiency": 0.812187852428064,
+        "convergence_rate": 0.8996586378036042,
+        "scalability_factor": 0.6425555043967496,
+        "cpu_utilization": 0.8124250823611336
+      },
+      "recommendations": [
+        "Optimize critical performance paths",
+        "Consider GPU acceleration for computationally intensive operations",
+        "Implement efficient caching strategies",
+        "Profile memory usage and optimize data structures"
+      ],
+      "error_message": null
+    },
+    {
+      "gate_name": "Security",
+      "status": "failed",
+      "score": 0.7796265935877649,
+      "threshold": 0.9,
+      "execution_time": 0.7007498741149902,
+      "criticality": "critical",
+      "details": {
+        "vulnerabilities": [
+          {
+            "type": "input_validation",
+            "severity": "medium",
+            "component": "user_input"
+          }
+        ],
+        "security_metrics": {
+          "vulnerability_count": 1,
+          "input_validation_score": 0.7690622642072711,
+          "access_control_score": 0.9651950309598949,
+          "encryption_compliance": 0.9296183776044918
+        }
+      },
+      "recommendations": [
+        "Address 1 security vulnerabilities",
+        "Strengthen input validation and sanitization"
+      ],
+      "error_message": null
+    },
+    {
+      "gate_name": "Reliability",
+      "status": "failed",
+      "score": 0.8754932813068099,
+      "threshold": 0.88,
+      "execution_time": 1.4010341167449951,
+      "criticality": "high",
+      "details": {
+        "error_handling_score": 0.8961562801974015,
+        "stress_test_score": 0.7162225967216574,
+        "recovery_score": 0.9347274301764673,
+        "stability_score": 0.877063525065667,
+        "uptime_simulation": 0.9911512935587786
+      },
+      "recommendations": [],
+      "error_message": null
+    },
+    {
+      "gate_name": "Accuracy",
+      "status": "passed",
+      "score": 0.932459986782943,
+      "threshold": 0.92,
+      "execution_time": 1.2011337280273438,
+      "criticality": "critical",
+      "details": {
+        "algorithm_accuracy": 0.9388922704664994,
+        "numerical_precision": 0.9647560321523471,
+        "convergence_accuracy": 0.9200967001822924,
+        "reference_comparison": 0.8853319060678102,
+        "field_quality_score": 0.9355867329832354
+      },
+      "recommendations": [],
+      "error_message": null
+    },
+    {
+      "gate_name": "Scalability",
+      "status": "passed",
+      "score": 0.7771282246176812,
+      "threshold": 0.75,
+      "execution_time": 1.2009940147399902,
+      "criticality": "medium",
+      "details": {
+        "array_scaling": 0.6881548101812919,
+        "complexity_validation": 0.9194729519891568,
+        "memory_scaling": 0.723232003909942,
+        "parallel_efficiency": 0.7189071388130469,
+        "throughput_scaling": 0.8833107196205898
+      },
+      "recommendations": [
+        "Optimize algorithms for larger array sizes",
+        "Implement memory-efficient data structures"
+      ],
+      "error_message": null
+    },
+    {
+      "gate_name": "Research Validation",
+      "status": "passed",
+      "score": 0.8964229508787422,
+      "threshold": 0.85,
+      "execution_time": 1.100982904434204,
+      "criticality": "high",
+      "details": {
+        "statistical_validation": 0.8535450669351752,
+        "reproducibility_score": 0.9502503324180925,
+        "experimental_design": 0.8798527000984631,
+        "documentation_score": 0.8953064519574749,
+        "methodology_rigor": 0.9253033988035265
+      },
+      "recommendations": [],
+      "error_message": null
+    }
+  ],
+  "config": {
+    "performance": {
+      "min_performance_score": 0.85
+    },
+    "security": {
+      "min_security_score": 0.9
+    },
+    "reliability": {
+      "min_reliability_score": 0.88
+    },
+    "accuracy": {
+      "min_accuracy_score": 0.92
+    },
+    "scalability": {
+      "min_scalability_score": 0.75
+    },
+    "research": {
+      "min_research_score": 0.85
+    }
+  }
+}
