@@ -248,8 +248,16 @@ class ExperimentRun(Base, TimestampMixin):
     user_id = Column(String(100), nullable=True)
     
     # Relationships
-    optimization_results = relationship("OptimizationResult", back_populates="experiment_run")
-    best_result = relationship("OptimizationResult", foreign_keys=[best_result_id])
+    optimization_results = relationship(
+        "OptimizationResult", 
+        back_populates="experiment_run",
+        foreign_keys="OptimizationResult.experiment_run_id"
+    )
+    best_result = relationship(
+        "OptimizationResult", 
+        foreign_keys=[best_result_id],
+        post_update=True
+    )
     
     def mark_completed(self):
         """Mark experiment as completed."""
