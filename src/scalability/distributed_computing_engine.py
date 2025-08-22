@@ -1,13 +1,33 @@
 """
-Distributed Computing Engine
-Generation 3: MAKE IT SCALE - High-performance distributed optimization for acoustic holography.
+Distributed Computing Engine for Acousto-Gen Generation 3.
+Implements parallel processing, load balancing, and cluster coordination.
 """
 
-import numpy as np
 import time
-import json
-import asyncio
 import threading
+import multiprocessing as mp
+import asyncio
+import logging
+from typing import Any, Dict, List, Optional, Union, Callable, Tuple
+from dataclasses import dataclass, field
+from enum import Enum
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+import queue
+import json
+import socket
+import pickle
+import numpy as np
+from pathlib import Path
+
+try:
+    import torch
+    import torch.distributed as dist
+    import torch.multiprocessing as torch_mp
+    TORCH_DISTRIBUTED_AVAILABLE = True
+except ImportError:
+    TORCH_DISTRIBUTED_AVAILABLE = False
+
+logger = logging.getLogger(__name__)
 from typing import Dict, List, Any, Optional, Callable, Union, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
