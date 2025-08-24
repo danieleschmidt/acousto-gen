@@ -1,0 +1,559 @@
+{
+  "execution_id": "quality_gates_1756073324",
+  "start_time": 1756073324.4469502,
+  "gate_results": {
+    "unit_tests": {
+      "gate_name": "unit_tests",
+      "raw_result": {
+        "total_tests": 4,
+        "passed": 2,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "test_details": [
+          {
+            "test_id": "test_phase_validation",
+            "name": "Phase Array Validation",
+            "result": {
+              "status": "TestResult.PASSED",
+              "result": true,
+              "execution_time": 7.3909759521484375e-06
+            }
+          },
+          {
+            "test_id": "test_optimization_convergence",
+            "name": "Optimization Convergence",
+            "result": {
+              "status": "TestResult.PASSED",
+              "result": true,
+              "execution_time": 8.821487426757812e-06
+            }
+          },
+          {
+            "test_id": "test_security_validation",
+            "name": "Security Input Validation",
+            "result": {
+              "status": "TestResult.FAILED",
+              "result": false,
+              "execution_time": 5.0067901611328125e-06
+            }
+          },
+          {
+            "test_id": "test_performance_bounds",
+            "name": "Performance Boundary Conditions",
+            "result": {
+              "status": "TestResult.FAILED",
+              "result": false,
+              "execution_time": 5.435943603515625e-05
+            }
+          }
+        ],
+        "coverage": 85.43181352046307,
+        "execution_time": 0.00010538101196289062
+      },
+      "score": 64.17272540818523,
+      "issues": [
+        "2 unit tests failed"
+      ],
+      "critical_issues": [],
+      "recommendations": [],
+      "execution_time": 0.00011539459228515625,
+      "passed": false
+    },
+    "security_scan": {
+      "gate_name": "security_scan",
+      "raw_result": {
+        "scan_id": "security_scan_1756073324",
+        "vulnerabilities": [
+          {
+            "vulnerability_type": "weak_crypto",
+            "severity": "high",
+            "description": "Weak encryption algorithm detected",
+            "file": "src/crypto.py",
+            "recommendation": "Use AES-256 or other strong encryption algorithms"
+          },
+          {
+            "vulnerability_type": "vulnerable_dependency",
+            "severity": "high",
+            "description": "Known vulnerability in requests library version 2.25.1",
+            "package": "requests==2.25.1",
+            "cve": "CVE-2021-33503",
+            "recommendation": "Update to requests>=2.26.0"
+          }
+        ],
+        "severity_breakdown": {
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "info": 0
+        },
+        "total_issues": 0,
+        "files_scanned": 4,
+        "scan_duration": 5.173683166503906e-05,
+        "recommendations": [
+          "Implement automated security scanning in CI/CD pipeline",
+          "Regular security training for development team",
+          "Establish security code review process",
+          "Implement security monitoring and alerting",
+          "Regular penetration testing and security audits"
+        ]
+      },
+      "score": 100.0,
+      "issues": [
+        "Weak encryption algorithm detected",
+        "Known vulnerability in requests library version 2.25.1"
+      ],
+      "critical_issues": [],
+      "recommendations": [],
+      "execution_time": 6.961822509765625e-05,
+      "passed": true
+    },
+    "performance_test": {
+      "gate_name": "performance_test",
+      "raw_result": {
+        "test_suite_id": "perf_test_1756073324",
+        "load_test": {
+          "test_scenarios": [
+            {
+              "concurrent_users": 100,
+              "avg_response_time_ms": 57.134835056157335,
+              "error_rate_percent": 0.01,
+              "throughput_rps": 9.9,
+              "cpu_usage_percent": 5.0,
+              "memory_usage_mb": 200
+            },
+            {
+              "concurrent_users": 500,
+              "avg_response_time_ms": 65.26282173985629,
+              "error_rate_percent": 0.01,
+              "throughput_rps": 47.5,
+              "cpu_usage_percent": 25.0,
+              "memory_usage_mb": 1000
+            },
+            {
+              "concurrent_users": 1000,
+              "avg_response_time_ms": 73.28949941280938,
+              "error_rate_percent": 0.01,
+              "throughput_rps": 90.0,
+              "cpu_usage_percent": 50.0,
+              "memory_usage_mb": 2000
+            },
+            {
+              "concurrent_users": 1500,
+              "avg_response_time_ms": 75.03618969774317,
+              "error_rate_percent": 0.01,
+              "throughput_rps": 127.5,
+              "cpu_usage_percent": 75.0,
+              "memory_usage_mb": 3000
+            }
+          ],
+          "peak_performance": {
+            "concurrent_users": 1500,
+            "avg_response_time_ms": 75.03618969774317,
+            "error_rate_percent": 0.01,
+            "throughput_rps": 127.5,
+            "cpu_usage_percent": 75.0,
+            "memory_usage_mb": 3000
+          },
+          "degradation_point": null
+        },
+        "stress_test": {
+          "breaking_point_users": 1500,
+          "recovery_time_seconds": 59.27701239843802,
+          "resource_exhaustion": {},
+          "failure_modes": [
+            "cpu_exhaustion"
+          ]
+        },
+        "memory_test": {
+          "baseline_memory_mb": 50,
+          "peak_memory_mb": 41.99751332987411,
+          "memory_leak_detected": false,
+          "gc_efficiency": 0.8709845580865363,
+          "memory_growth_rate": -0.36226314881768024
+        },
+        "scalability_test": {
+          "horizontal_scaling": [
+            {
+              "instances": 1,
+              "total_throughput": 72.0,
+              "per_instance_throughput": 72.0,
+              "scaling_efficiency": 1.0
+            },
+            {
+              "instances": 2,
+              "total_throughput": 144.0,
+              "per_instance_throughput": 72.0,
+              "scaling_efficiency": 1.0
+            },
+            {
+              "instances": 4,
+              "total_throughput": 288.0,
+              "per_instance_throughput": 72.0,
+              "scaling_efficiency": 1.0
+            },
+            {
+              "instances": 8,
+              "total_throughput": 576.0,
+              "per_instance_throughput": 72.0,
+              "scaling_efficiency": 1.0
+            }
+          ],
+          "vertical_scaling": [
+            {
+              "cpu_cores": 2,
+              "throughput": 117.0,
+              "throughput_per_core": 58.5
+            },
+            {
+              "cpu_cores": 4,
+              "throughput": 144.0,
+              "throughput_per_core": 36.0
+            },
+            {
+              "cpu_cores": 8,
+              "throughput": 171.0,
+              "throughput_per_core": 21.375
+            },
+            {
+              "cpu_cores": 16,
+              "throughput": 198.00000000000003,
+              "throughput_per_core": 12.375000000000002
+            }
+          ],
+          "scaling_efficiency": 1.0,
+          "optimal_configuration": {}
+        },
+        "overall_score": 88.71986058722639,
+        "sla_compliance": {
+          "response_time": true,
+          "error_rate": true,
+          "memory": true
+        },
+        "bottlenecks": [],
+        "recommendations": [
+          "Implement comprehensive performance monitoring in production",
+          "Set up automated performance regression testing",
+          "Consider implementing auto-scaling based on performance metrics",
+          "Regular performance profiling to identify optimization opportunities"
+        ]
+      },
+      "score": 88.71986058722639,
+      "issues": [],
+      "critical_issues": [],
+      "recommendations": [],
+      "execution_time": 0.00027871131896972656,
+      "passed": true
+    },
+    "compliance_validation": {
+      "gate_name": "compliance_validation",
+      "raw_result": {
+        "validation_id": "compliance_1756073324",
+        "standards_tested": [
+          "gdpr",
+          "hipaa",
+          "sox",
+          "pci_dss",
+          "iso27001",
+          "wcag"
+        ],
+        "results_by_standard": {
+          "gdpr": {
+            "standard": "gdpr",
+            "total_checks": 4,
+            "passed_checks": 1,
+            "failed_checks": 3,
+            "check_results": [
+              {
+                "status": "failed",
+                "findings": [
+                  "Lawful basis documented",
+                  "Data processing register maintained"
+                ],
+                "recommendation": "Ensure all data processing activities have documented lawful basis",
+                "check_id": "gdpr_data_processing_lawfulness",
+                "severity": "high"
+              },
+              {
+                "status": "passed",
+                "findings": [
+                  "Consent collection mechanism present",
+                  "Withdrawal process available"
+                ],
+                "recommendation": "Implement granular consent management with easy withdrawal",
+                "check_id": "gdpr_consent_management",
+                "severity": "info"
+              },
+              {
+                "status": "failed",
+                "findings": [
+                  "Data export functionality missing",
+                  "Data deletion process incomplete"
+                ],
+                "recommendation": "Implement complete data subject rights: access, rectification, erasure, portability",
+                "check_id": "gdpr_data_subject_rights",
+                "severity": "high"
+              },
+              {
+                "status": "failed",
+                "findings": [
+                  "Privacy impact assessment conducted",
+                  "Data minimization principles applied"
+                ],
+                "recommendation": "Integrate privacy considerations into system design from the start",
+                "check_id": "gdpr_privacy_by_design",
+                "severity": "high"
+              }
+            ],
+            "issues": [
+              {
+                "standard": "gdpr",
+                "check_id": "gdpr_data_processing_lawfulness",
+                "description": "Verify lawful basis for data processing",
+                "requirement": "Article 6 - Lawfulness of processing",
+                "severity": "high",
+                "recommendation": "Ensure all data processing activities have documented lawful basis"
+              },
+              {
+                "standard": "gdpr",
+                "check_id": "gdpr_data_subject_rights",
+                "description": "Verify implementation of data subject rights",
+                "requirement": "Articles 15-22 - Rights of the data subject",
+                "severity": "high",
+                "recommendation": "Implement complete data subject rights: access, rectification, erasure, portability"
+              },
+              {
+                "standard": "gdpr",
+                "check_id": "gdpr_privacy_by_design",
+                "description": "Check privacy by design implementation",
+                "requirement": "Article 25 - Data protection by design and by default",
+                "severity": "high",
+                "recommendation": "Integrate privacy considerations into system design from the start"
+              }
+            ]
+          },
+          "hipaa": {
+            "standard": "hipaa",
+            "total_checks": 3,
+            "passed_checks": 3,
+            "failed_checks": 0,
+            "check_results": [
+              {
+                "status": "passed",
+                "findings": [
+                  "Role-based access control implemented",
+                  "User authentication required"
+                ],
+                "recommendation": "Implement comprehensive access controls with minimum necessary access",
+                "check_id": "hipaa_access_controls",
+                "severity": "info"
+              },
+              {
+                "status": "passed",
+                "findings": [
+                  "Audit logging enabled",
+                  "Log review process established"
+                ],
+                "recommendation": "Maintain comprehensive audit trails for all ePHI access",
+                "check_id": "hipaa_audit_controls",
+                "severity": "info"
+              },
+              {
+                "status": "passed",
+                "findings": [
+                  "Data encryption at rest",
+                  "Transmission encryption configured"
+                ],
+                "recommendation": "Ensure all ePHI is encrypted both at rest and in transit",
+                "check_id": "hipaa_encryption",
+                "severity": "info"
+              }
+            ],
+            "issues": []
+          },
+          "wcag": {
+            "standard": "wcag",
+            "total_checks": 3,
+            "passed_checks": 1,
+            "failed_checks": 2,
+            "check_results": [
+              {
+                "status": "failed",
+                "findings": [
+                  "Tab navigation functional",
+                  "Focus indicators visible"
+                ],
+                "recommendation": "Ensure all interactive elements are keyboard accessible",
+                "check_id": "wcag_keyboard_navigation",
+                "severity": "medium"
+              },
+              {
+                "status": "failed",
+                "findings": [
+                  "Some text fails contrast requirements",
+                  "Color used as only visual cue"
+                ],
+                "recommendation": "Achieve minimum 4.5:1 contrast ratio for normal text, 3:1 for large text",
+                "check_id": "wcag_color_contrast",
+                "severity": "medium"
+              },
+              {
+                "status": "passed",
+                "findings": [
+                  "Most images have alt text",
+                  "Some decorative images not marked appropriately"
+                ],
+                "recommendation": "Provide meaningful alternative text for all informative images",
+                "check_id": "wcag_alt_text",
+                "severity": "info"
+              }
+            ],
+            "issues": [
+              {
+                "standard": "wcag",
+                "check_id": "wcag_keyboard_navigation",
+                "description": "Verify keyboard navigation support",
+                "requirement": "WCAG 2.1.1 Keyboard",
+                "severity": "medium",
+                "recommendation": "Ensure all interactive elements are keyboard accessible"
+              },
+              {
+                "standard": "wcag",
+                "check_id": "wcag_color_contrast",
+                "description": "Check color contrast ratios",
+                "requirement": "WCAG 1.4.3 Contrast (Minimum)",
+                "severity": "medium",
+                "recommendation": "Achieve minimum 4.5:1 contrast ratio for normal text, 3:1 for large text"
+              }
+            ]
+          }
+        },
+        "overall_compliance": {
+          "total_checks": 10,
+          "passed_checks": 5,
+          "failed_checks": 5,
+          "compliance_percentage": 50.0
+        },
+        "non_compliance_issues": [
+          {
+            "standard": "gdpr",
+            "check_id": "gdpr_data_processing_lawfulness",
+            "description": "Verify lawful basis for data processing",
+            "requirement": "Article 6 - Lawfulness of processing",
+            "severity": "high",
+            "recommendation": "Ensure all data processing activities have documented lawful basis"
+          },
+          {
+            "standard": "gdpr",
+            "check_id": "gdpr_data_subject_rights",
+            "description": "Verify implementation of data subject rights",
+            "requirement": "Articles 15-22 - Rights of the data subject",
+            "severity": "high",
+            "recommendation": "Implement complete data subject rights: access, rectification, erasure, portability"
+          },
+          {
+            "standard": "gdpr",
+            "check_id": "gdpr_privacy_by_design",
+            "description": "Check privacy by design implementation",
+            "requirement": "Article 25 - Data protection by design and by default",
+            "severity": "high",
+            "recommendation": "Integrate privacy considerations into system design from the start"
+          },
+          {
+            "standard": "wcag",
+            "check_id": "wcag_keyboard_navigation",
+            "description": "Verify keyboard navigation support",
+            "requirement": "WCAG 2.1.1 Keyboard",
+            "severity": "medium",
+            "recommendation": "Ensure all interactive elements are keyboard accessible"
+          },
+          {
+            "standard": "wcag",
+            "check_id": "wcag_color_contrast",
+            "description": "Check color contrast ratios",
+            "requirement": "WCAG 1.4.3 Contrast (Minimum)",
+            "severity": "medium",
+            "recommendation": "Achieve minimum 4.5:1 contrast ratio for normal text, 3:1 for large text"
+          }
+        ],
+        "compliance_score": 50.0,
+        "recommendations": [
+          "URGENT: Compliance score below 70% - immediate remediation required",
+          "Implement comprehensive data governance program for GDPR compliance",
+          "Establish HIPAA security officer role and conduct regular risk assessments",
+          "Integrate accessibility testing into development workflow",
+          "Establish compliance monitoring and regular auditing process",
+          "Provide compliance training for development and operations teams",
+          "Implement automated compliance checking in CI/CD pipeline",
+          "Regular compliance assessments with external auditors",
+          "Maintain compliance documentation and evidence repository"
+        ]
+      },
+      "score": 50.0,
+      "issues": [
+        "WCAG: Verify keyboard navigation support",
+        "WCAG: Check color contrast ratios"
+      ],
+      "critical_issues": [
+        "GDPR: Verify lawful basis for data processing",
+        "GDPR: Verify implementation of data subject rights",
+        "GDPR: Check privacy by design implementation"
+      ],
+      "recommendations": [],
+      "execution_time": 9.083747863769531e-05,
+      "passed": false
+    }
+  },
+  "overall_status": "TestResult.FAILED",
+  "quality_score": 78.2231464988529,
+  "critical_issues": [
+    "GDPR: Verify lawful basis for data processing",
+    "GDPR: Verify implementation of data subject rights",
+    "GDPR: Check privacy by design implementation"
+  ],
+  "recommendations": [
+    "WARNING: Overall quality score below 85% - prioritize quality improvements",
+    "Improve unit test coverage and fix failing tests",
+    "Implement missing compliance controls and fix violations",
+    "Integrate quality gates into CI/CD pipeline for continuous validation",
+    "Establish quality metrics monitoring and alerting",
+    "Regular quality gate execution and trend analysis",
+    "Team training on quality practices and standards",
+    "Implement shift-left quality practices in development process"
+  ],
+  "compliance_summary": {},
+  "execution_summary": {
+    "gates_executed": 4,
+    "gates_passed": 2,
+    "gates_failed": 2,
+    "gates_error": 0,
+    "critical_issues_count": 3,
+    "overall_quality_score": 78.2231464988529,
+    "execution_status": "failed",
+    "total_execution_time": 0,
+    "gate_breakdown": {
+      "unit_tests": {
+        "passed": false,
+        "score": 64.17272540818523,
+        "execution_time": 0.00011539459228515625
+      },
+      "security_scan": {
+        "passed": true,
+        "score": 100.0,
+        "execution_time": 6.961822509765625e-05
+      },
+      "performance_test": {
+        "passed": true,
+        "score": 88.71986058722639,
+        "execution_time": 0.00027871131896972656
+      },
+      "compliance_validation": {
+        "passed": false,
+        "score": 50.0,
+        "execution_time": 9.083747863769531e-05
+      }
+    }
+  },
+  "total_execution_time": 0.0006241798400878906
+}

@@ -1,0 +1,43 @@
+{
+  "apiVersion": "networking.k8s.io/v1",
+  "kind": "Ingress",
+  "metadata": {
+    "name": "acousto-gen-ingress",
+    "namespace": "acousto-gen-dev",
+    "annotations": {
+      "kubernetes.io/ingress.class": "nginx",
+      "cert-manager.io/cluster-issuer": "letsencrypt-prod"
+    }
+  },
+  "spec": {
+    "tls": [
+      {
+        "hosts": [
+          "dev.acousto-gen.local"
+        ],
+        "secretName": "acousto-gen-tls"
+      }
+    ],
+    "rules": [
+      {
+        "host": "dev.acousto-gen.local",
+        "http": {
+          "paths": [
+            {
+              "path": "/",
+              "pathType": "Prefix",
+              "backend": {
+                "service": {
+                  "name": "acousto-gen-service",
+                  "port": {
+                    "number": 80
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

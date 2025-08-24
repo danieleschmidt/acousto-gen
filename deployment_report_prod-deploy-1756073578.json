@@ -1,0 +1,50 @@
+{
+  "deployment_summary": {
+    "deployment_id": "prod-deploy-1756073578",
+    "application": "acousto-gen",
+    "environment": "production",
+    "strategy": "blue_green",
+    "status": "SUCCESS",
+    "duration_seconds": 5.410052061080933,
+    "timestamp": 1756073578.2024198
+  },
+  "phase_results": {
+    "container_build": {
+      "success": true,
+      "image_size_mb": 256,
+      "vulnerabilities_found": 0,
+      "build_time": 1756073578.202433
+    },
+    "kubernetes_deployment": {
+      "success": true,
+      "deployment_id": "deploy-acousto-gen-1756073579",
+      "environment": "production",
+      "strategy": "blue_green",
+      "rollback_available": true
+    },
+    "monitoring": {
+      "components_deployed": [
+        "prometheus",
+        "grafana",
+        "alertmanager",
+        "elk",
+        "jaeger"
+      ],
+      "dashboards_created": 4,
+      "alerts_configured": 5
+    }
+  },
+  "deployment_artifacts": [],
+  "monitoring_endpoints": {
+    "grafana": "https://grafana.production.acousto-gen.com",
+    "prometheus": "https://prometheus.production.acousto-gen.com",
+    "jaeger": "https://jaeger.production.acousto-gen.com"
+  },
+  "rollback_info": {},
+  "recommendations": [
+    "Monitor application metrics for the next 24 hours",
+    "Review performance baselines and adjust auto-scaling if needed",
+    "Schedule post-deployment retrospective with team",
+    "Update documentation with new deployment configurations"
+  ]
+}

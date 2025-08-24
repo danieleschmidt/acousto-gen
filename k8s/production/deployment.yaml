@@ -1,0 +1,81 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "acousto-gen",
+    "namespace": "acousto-gen-prod",
+    "labels": {
+      "app": "acousto-gen",
+      "environment": "production"
+    }
+  },
+  "spec": {
+    "replicas": 3,
+    "selector": {
+      "matchLabels": {
+        "app": "acousto-gen"
+      }
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "acousto-gen",
+          "environment": "production"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "acousto-gen",
+            "image": "your-registry.com/acousto-gen:latest",
+            "ports": [
+              {
+                "containerPort": 8000
+              }
+            ],
+            "env": [
+              {
+                "name": "ENV",
+                "value": "production"
+              },
+              {
+                "name": "DEBUG",
+                "value": "false"
+              },
+              {
+                "name": "LOG_LEVEL",
+                "value": "WARNING"
+              }
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "2",
+                "memory": "4Gi"
+              },
+              "requests": {
+                "cpu": "2",
+                "memory": "4Gi"
+              }
+            },
+            "livenessProbe": {
+              "httpGet": {
+                "path": "/health",
+                "port": 8000
+              },
+              "initialDelaySeconds": 60,
+              "periodSeconds": 30
+            },
+            "readinessProbe": {
+              "httpGet": {
+                "path": "/ready",
+                "port": 8000
+              },
+              "initialDelaySeconds": 10,
+              "periodSeconds": 5
+            }
+          }
+        ]
+      }
+    }
+  }
+}

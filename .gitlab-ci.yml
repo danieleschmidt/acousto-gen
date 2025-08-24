@@ -1,0 +1,80 @@
+# GitLab CI/CD Configuration for acousto-gen-cicd-pipeline
+
+stages:
+  - build
+  - security
+  - quality
+  - package
+  - deploy
+
+variables:
+  DOCKER_REGISTRY: your-registry.com
+  APP_NAME: acousto-gen
+
+before_script:
+  - python --version
+  - pip install --upgrade pip
+
+build:
+  stage: build
+  script:
+    - pip install -r requirements.txt
+    - python -m pytest tests/ --cov=src/ --cov-report=xml
+    - python -m ruff check src/
+    - python -m mypy src/
+  artifacts:
+    reports:
+      coverage_report: coverage.xml
+    expire_in: 1 hour
+
+security_scan:
+  stage: security
+  script:
+    - pip install bandit safety
+    - python -m bandit -r src/ -f json -o bandit-report.json
+    - python -m safety check --json --output safety-report.json
+  artifacts:
+    reports:
+      security_report: bandit-report.json
+    expire_in: 1 hour
+
+quality_gates:
+  stage: quality
+  script:
+    - python comprehensive_quality_gates_system.py
+  artifacts:
+    reports:
+      quality_report: quality_results.json
+    expire_in: 1 hour
+
+build_image:
+  stage: package
+  script:
+    - docker build -t $DOCKER_REGISTRY/$APP_NAME:$CI_COMMIT_SHA .
+    - docker push $DOCKER_REGISTRY/$APP_NAME:$CI_COMMIT_SHA
+  only:
+    - main
+    - tags
+
+deploy_staging:
+  stage: deploy
+  script:
+    - kubectl set image deployment/$APP_NAME $APP_NAME=$DOCKER_REGISTRY/$APP_NAME:$CI_COMMIT_SHA -n $APP_NAME-staging
+    - kubectl rollout status deployment/$APP_NAME -n $APP_NAME-staging --timeout=300s
+  environment:
+    name: staging
+    url: https://staging.$APP_NAME.com
+  only:
+    - main
+
+deploy_production:
+  stage: deploy
+  script:
+    - kubectl set image deployment/$APP_NAME $APP_NAME=$DOCKER_REGISTRY/$APP_NAME:$CI_COMMIT_SHA -n $APP_NAME-prod
+    - kubectl rollout status deployment/$APP_NAME -n $APP_NAME-prod --timeout=600s
+  environment:
+    name: production
+    url: https://api.$APP_NAME.com
+  when: manual
+  only:
+    - tags
