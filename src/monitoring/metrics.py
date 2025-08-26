@@ -64,6 +64,9 @@ except ImportError:
     
     def generate_latest():
         return "# Mock metrics\ntest_metric 1.0\n"
+    
+    # Store global reference for nested classes
+    _MockMetric = MockMetric
 
 try:
     from opentelemetry import trace, metrics
@@ -118,17 +121,30 @@ except ImportError:
         @staticmethod
         def get_meter(name):
             class MockMeter:
+                class DummyMetric:
+                    def __init__(self, name, description):
+                        self.name = name
+                        self.value = 0
+                    def inc(self, amount=1):
+                        self.value += amount
+                    def set(self, value):
+                        self.value = value
+                    def observe(self, value):
+                        self.value = value
+                    def labels(self, **kwargs):
+                        return self
+                
                 def create_counter(self, name, description=None, unit=None):
-                    return MockMetric(name, description)
+                    return self.DummyMetric(name, description or "")
                 
                 def create_histogram(self, name, description=None, unit=None):
-                    return MockMetric(name, description)
+                    return self.DummyMetric(name, description or "")
                 
                 def create_gauge(self, name, description=None, unit=None):
-                    return MockMetric(name, description)
+                    return self.DummyMetric(name, description or "")
                 
                 def create_up_down_counter(self, name, description=None, unit=None):
-                    return MockMetric(name, description)
+                    return self.DummyMetric(name, description or "")
             
             return MockMeter()
     
