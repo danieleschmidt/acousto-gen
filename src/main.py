@@ -32,8 +32,8 @@ from models.acoustic_field import AcousticField, TargetPattern
 from applications.levitation.acoustic_levitator import AcousticLevitator
 from hardware.drivers.hardware_interface import SerialHardware, NetworkHardware
 from database.connection import DatabaseManager
-from database.repositories import OptimizationRepository, FieldDataRepository, ExperimentRepository
-from database.models import OptimizationResult, FieldData, Experiment, PerformanceMetrics
+from database.repositories import OptimizationRepository, FieldRepository, ExperimentRepository
+from database.models import OptimizationResult, AcousticFieldData, ExperimentRun, SystemMetric
 from monitoring.metrics import MetricsCollector
 
 
@@ -176,7 +176,7 @@ class AcoustoGenSystem:
         self.db_manager.create_tables()
         with self.db_manager.get_session() as session:
             self.opt_repo = OptimizationRepository(session)
-            self.field_repo = FieldDataRepository(session)
+            self.field_repo = FieldRepository(session)
             self.exp_repo = ExperimentRepository(session)
         
         # Setup transducer array
@@ -555,7 +555,7 @@ async def start_optimization(request: OptimizationRequest):
         # Create experiment record
         with system.db_manager.get_session() as session:
             exp_repo = ExperimentRepository(session)
-            experiment = Experiment(
+            experiment = ExperimentRun(
                 name=f"Optimization_{request.target_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
                 description=f"Optimization for {request.target_type} target",
                 application_type="optimization",
@@ -671,8 +671,8 @@ async def calculate_field(request: FieldCalculationRequest):
         
         # Store field data in database
         with system.db_manager.get_session() as session:
-            field_repo = FieldDataRepository(session)
-            field_record = FieldData(
+            field_repo = FieldRepository(session)
+            field_record = AcousticFieldData(
                 field_type="acoustic_pressure",
                 shape_x=field_data.shape[0],
                 shape_y=field_data.shape[1],
@@ -706,7 +706,7 @@ async def get_field_data(field_id: int):
     """Get field data by ID."""
     try:
         with system.db_manager.get_session() as session:
-            field_repo = FieldDataRepository(session)
+            field_repo = FieldRepository(session)
             field = field_repo.get_by_id(field_id)
             
             if not field:
@@ -736,7 +736,7 @@ async def list_field_data(limit: int = 20):
     """List available field data."""
     try:
         with system.db_manager.get_session() as session:
-            field_repo = FieldDataRepository(session)
+            field_repo = FieldRepository(session)
             fields = field_repo.get_recent(hours=24, limit=limit)
             
             return [
@@ -844,7 +844,7 @@ async def create_experiment(request: ExperimentRequest):
     try:
         with system.db_manager.get_session() as session:
             exp_repo = ExperimentRepository(session)
-            experiment = Experiment(
+            experiment = ExperimentRun(
                 name=request.name,
                 description=request.description,
                 application_type=request.application_type,

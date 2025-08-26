@@ -143,12 +143,17 @@ class DatabaseManager:
     def health_check(self) -> bool:
         """Check database connectivity."""
         try:
+            from sqlalchemy import text
             with self.session_scope() as session:
-                session.execute("SELECT 1")
+                session.execute(text("SELECT 1"))
             return True
         except Exception as e:
             logger.error(f"Database health check failed: {e}")
             return False
+    
+    def test_connection(self) -> bool:
+        """Test database connection (alias for health_check)."""
+        return self.health_check()
     
     def get_stats(self) -> dict:
         """Get database statistics."""
