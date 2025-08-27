@@ -638,7 +638,7 @@ class MockTorch:
     dtype = float32
     
     # Type alias for compatibility
-    Tensor = 'MockTensor'
+    Tensor = MockArray
     
     # Neural network module
     class nn:
@@ -934,17 +934,26 @@ def setup_mock_dependencies():
         sys.modules['scipy.spatial'] = MockScipy.spatial
         sys.modules['scipy.optimize'] = MockScipy.optimize
         
-        # Mock h5py
+    # Mock h5py (always needed)
+    if 'h5py' not in sys.modules:
         class MockH5py:
             class File:
                 def __init__(self, *args, **kwargs):
-                    pass
+                    self.attrs = {}
                 def __enter__(self):
                     return self
                 def __exit__(self, *args):
                     pass
-                def create_dataset(self, *args, **kwargs):
+                def create_dataset(self, name, data=None, **kwargs):
+                    return MockArray([0] if data is None else data)
+                def __getitem__(self, key):
                     return MockArray([0])
+                def __setitem__(self, key, value):
+                    pass
+                def keys(self):
+                    return []
+                def close(self):
+                    pass
         
         sys.modules['h5py'] = MockH5py()
     

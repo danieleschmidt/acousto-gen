@@ -6,8 +6,23 @@ Core data structures for acoustic holography computations.
 import numpy as np
 from typing import Optional, Tuple, List, Dict, Any
 from dataclasses import dataclass, field
-import h5py
 import json
+
+# Handle optional dependencies
+try:
+    import h5py
+except ImportError:
+    # Set up mock h5py if needed
+    try:
+        import sys
+        from pathlib import Path
+        mock_path = Path(__file__).parent.parent.parent / "acousto_gen"
+        sys.path.insert(0, str(mock_path))
+        from mock_backend import setup_mock_dependencies
+        setup_mock_dependencies()
+        import h5py
+    except ImportError:
+        h5py = None
 
 
 @dataclass
