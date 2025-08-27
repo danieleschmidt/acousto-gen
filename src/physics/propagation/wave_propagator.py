@@ -6,8 +6,23 @@ Implements accurate physics-based wave propagation with GPU acceleration support
 import numpy as np
 from typing import Tuple, Optional, Dict, Any, List
 from dataclasses import dataclass
-import torch
-import torch.nn.functional as F
+try:
+    import torch
+    import torch.nn.functional as F
+except ImportError:
+    # Try to use mock backend
+    try:
+        import sys
+        from pathlib import Path
+        mock_path = Path(__file__).parent.parent.parent.parent / "acousto_gen"
+        sys.path.insert(0, str(mock_path))
+        from mock_backend import setup_mock_dependencies
+        setup_mock_dependencies()
+        import torch
+        import torch.nn.functional as F
+    except ImportError:
+        torch = None
+        F = None
 
 
 @dataclass
@@ -65,7 +80,10 @@ class WavePropagator:
             speed_of_sound=343,
             absorption=0.01
         )
-        self.device = torch.device(device if torch.cuda.is_available() else "cpu")
+        if torch:
+            self.device = torch.device(device if torch.cuda.is_available() else "cpu")
+        else:
+            self.device = "cpu"
         
         # Setup computational grid
         self._setup_grid()
@@ -86,10 +104,15 @@ class WavePropagator:
         
         self.X, self.Y, self.Z = np.meshgrid(x, y, z, indexing='ij')
         
-        # Convert to torch tensors
-        self.X_tensor = torch.tensor(self.X, dtype=torch.float32, device=self.device)
-        self.Y_tensor = torch.tensor(self.Y, dtype=torch.float32, device=self.device)
-        self.Z_tensor = torch.tensor(self.Z, dtype=torch.float32, device=self.device)
+        # Convert to torch tensors if available
+        if torch:
+            self.X_tensor = torch.tensor(self.X, dtype=torch.float32, device=self.device)
+            self.Y_tensor = torch.tensor(self.Y, dtype=torch.float32, device=self.device)
+            self.Z_tensor = torch.tensor(self.Z, dtype=torch.float32, device=self.device)
+        else:
+            self.X_tensor = self.X
+            self.Y_tensor = self.Y  
+            self.Z_tensor = self.Z
     
     def _compute_kernels(self):
         """Precompute propagation kernels for angular spectrum method."""
@@ -107,8 +130,11 @@ class WavePropagator:
         k_real = np.real(self.k)
         self.kz = np.sqrt(k_real**2 - self.KX**2 - self.KY**2 + 0j)
         
-        # Convert to torch
-        self.kz_tensor = torch.tensor(self.kz, dtype=torch.complex64, device=self.device)
+        # Convert to torch if available
+        if torch:
+            self.kz_tensor = torch.tensor(self.kz, dtype=torch.complex64, device=self.device)
+        else:
+            self.kz_tensor = self.kz
     
     def compute_field_from_sources(
         self,
@@ -129,18 +155,26 @@ class WavePropagator:
         Returns:
             Complex pressure field at target points or full grid
         """
-        # Convert to tensors
-        positions = torch.tensor(source_positions, dtype=torch.float32, device=self.device)
-        amplitudes = torch.tensor(source_amplitudes, dtype=torch.float32, device=self.device)
-        phases = torch.tensor(source_phases, dtype=torch.float32, device=self.device)
+        # Convert to tensors if torch available
+        if torch:
+            positions = torch.tensor(source_positions, dtype=torch.float32, device=self.device)
+            amplitudes = torch.tensor(source_amplitudes, dtype=torch.float32, device=self.device)
+            phases = torch.tensor(source_phases, dtype=torch.float32, device=self.device)
+        else:
+            positions = source_positions
+            amplitudes = source_amplitudes
+            phases = source_phases
         
         if target_points is None:
             # Compute on full grid
-            field = torch.zeros(
-                (self.nx, self.ny, self.nz),
-                dtype=torch.complex64,
-                device=self.device
-            )
+            if torch:
+                field = torch.zeros(
+                    (self.nx, self.ny, self.nz),
+                    dtype=torch.complex64,
+                    device=self.device
+                )
+            else:
+                field = np.zeros((self.nx, self.ny, self.nz), dtype=complex)
             
             # Rayleigh-Sommerfeld integral
             for i in range(len(positions)):
