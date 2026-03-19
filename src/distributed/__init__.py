@@ -1,1 +1,0 @@
-"""Distributed computing modules for large-scale acoustic holography."""

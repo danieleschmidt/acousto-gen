@@ -1,1 +1,0 @@
-"""Safety monitoring and enforcement systems for acoustic holography."""

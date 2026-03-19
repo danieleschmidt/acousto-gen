@@ -1,1 +1,0 @@
-"""Mid-air haptic feedback applications using acoustic holography."""

@@ -1,1 +1,0 @@
-"""Security modules for acoustic holography systems."""
